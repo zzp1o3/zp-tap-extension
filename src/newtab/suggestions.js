@@ -140,16 +140,16 @@ const STAR_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentC
 const ROW_CLASS = [
   "flex", "items-center", "gap-3", "px-3", "py-2", "rounded-xl",
   "cursor-pointer", "transition-all", "duration-200", "ease-in-out",
-  "hover:bg-white/10", "hover:scale-[1.01]",
+  "hover:bg-[var(--tp-hover)]", "hover:scale-[1.01]",
+  "text-[var(--tp-tx)]",
 ].join(" ");
-const ROW_SELECTED = "bg-white/15";
+const ROW_SELECTED = "bg-[var(--tp-select)]";
 const ICON_CLASS = [
   "w-5", "h-5", "rounded", "flex-none",
-  "bg-white/5",
 ].join(" ");
 const TEXT_CLASS = "flex-1 min-w-0 relative";
-const TITLE_CLASS = "text-[14px] truncate text-white/95";
-const SUB_CLASS = "text-[12px] truncate text-white/55";
+const TITLE_CLASS = "text-[14px] truncate text-[var(--tp-tx-3)]";
+const SUB_CLASS = "text-[12px] truncate text-[var(--tp-tx-dim)]";
 const MARK_CLASS = "absolute -top-0.5 right-0 text-amber-300/90";
 
 // 渲染建议列表到容器。返回清理函数。

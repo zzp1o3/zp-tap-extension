@@ -1,10 +1,113 @@
 @import "tailwindcss";
 
-/* Tap 新标签页主题：克制、毛玻璃、壁纸为主角。
+/* Tap 新标签页主题系统。
+   主题变量控制全局颜色；Tailwind @theme 色标映射变量供 HTML 用工具类引用。
    不用渐变背景、不用彩色光晕、不用重拟物、不用复杂动画。 */
 
+/* ──── 主题变量 ──── */
+:root,
+body[data-theme="dark"] {
+  --tap-glass:   rgba(255, 255, 255, 0.10);
+  --tap-glass-2: rgba(255, 255, 255, 0.15);
+  --tap-card:    rgba(255, 255, 255, 0.04);
+  --tap-page:    #0f1013;
+  --tap-wall:    #1a2233;
+  --tap-input:   #14161b;
+  --tap-upload:  rgba(255, 255, 255, 0.03);
+  --tap-tx:      #ffffff;
+  --tap-tx-dim:  rgba(255, 255, 255, 0.55);
+  --tap-tx-70:   rgba(255, 255, 255, 0.70);
+  --tap-tx-90:   rgba(255, 255, 255, 0.90);
+  --tap-tx-95:   rgba(255, 255, 255, 0.95);
+  --tap-line:    rgba(255, 255, 255, 0.10);
+  --tap-line-2:  rgba(255, 255, 255, 0.20);
+  --tap-line-15: rgba(255, 255, 255, 0.15);
+  --tap-select:  rgba(255, 255, 255, 0.14);
+  --tap-hover:   rgba(255, 255, 255, 0.10);
+  --tap-shade:   rgba(0, 0, 0, 0.25);
+  --tap-overlay: rgba(0, 0, 0, 0.40);
+  --tap-gear:    rgba(0, 0, 0, 0.25);
+  --tap-trash:   rgba(0, 0, 0, 0.55);
+  --tap-badge:   rgba(0, 0, 0, 0.55);
+  --tap-drawer:  rgba(15, 16, 19, 0.95);
+  color-scheme: dark;
+}
+
+body[data-theme="light"] {
+  --tap-glass:   rgba(0, 0, 0, 0.05);
+  --tap-glass-2: rgba(0, 0, 0, 0.08);
+  --tap-card:    rgba(0, 0, 0, 0.03);
+  --tap-page:    #f0f2f5;
+  --tap-wall:    #d8dde3;
+  --tap-input:   #ffffff;
+  --tap-upload:  rgba(0, 0, 0, 0.02);
+  --tap-tx:      #1a1c22;
+  --tap-tx-dim:  rgba(0, 0, 0, 0.45);
+  --tap-tx-70:   rgba(0, 0, 0, 0.60);
+  --tap-tx-90:   rgba(0, 0, 0, 0.82);
+  --tap-tx-95:   rgba(0, 0, 0, 0.90);
+  --tap-line:    rgba(0, 0, 0, 0.08);
+  --tap-line-2:  rgba(0, 0, 0, 0.12);
+  --tap-line-15: rgba(0, 0, 0, 0.10);
+  --tap-select:  rgba(0, 0, 0, 0.06);
+  --tap-hover:   rgba(0, 0, 0, 0.05);
+  --tap-shade:   transparent;
+  --tap-overlay: rgba(255, 255, 255, 0.15);
+  --tap-gear:    rgba(255, 255, 255, 0.20);
+  --tap-trash:   rgba(0, 0, 0, 0.35);
+  --tap-badge:   rgba(0, 0, 0, 0.35);
+  --tap-drawer:  rgba(240, 242, 245, 0.95);
+  color-scheme: light;
+}
+
+/* system 模式：默认取暗色，在浅色偏好时覆写 */
+@media (prefers-color-scheme: light) {
+  body[data-theme="system"] {
+    --tap-glass:   rgba(0, 0, 0, 0.05);
+    --tap-glass-2: rgba(0, 0, 0, 0.08);
+    --tap-card:    rgba(0, 0, 0, 0.03);
+    --tap-page:    #f0f2f5;
+    --tap-wall:    #d8dde3;
+    --tap-input:   #ffffff;
+    --tap-upload:  rgba(0, 0, 0, 0.02);
+    --tap-tx:      #1a1c22;
+    --tap-tx-dim:  rgba(0, 0, 0, 0.45);
+    --tap-tx-70:   rgba(0, 0, 0, 0.60);
+    --tap-tx-90:   rgba(0, 0, 0, 0.82);
+    --tap-tx-95:   rgba(0, 0, 0, 0.90);
+    --tap-line:    rgba(0, 0, 0, 0.08);
+    --tap-line-2:  rgba(0, 0, 0, 0.12);
+    --tap-line-15: rgba(0, 0, 0, 0.10);
+    --tap-select:  rgba(0, 0, 0, 0.06);
+    --tap-hover:   rgba(0, 0, 0, 0.05);
+    --tap-shade:   transparent;
+    --tap-overlay: rgba(255, 255, 255, 0.15);
+    --tap-gear:    rgba(255, 255, 255, 0.20);
+    --tap-trash:   rgba(0, 0, 0, 0.35);
+    --tap-badge:   rgba(0, 0, 0, 0.35);
+    --tap-drawer:  rgba(240, 242, 245, 0.95);
+    color-scheme: light;
+  }
+}
+
+/* Tailwind 色标 —— 映射到 CSS 变量 */
 @theme {
-  --color-tap-text: #ffffff;
+  --color-glass:  var(--tap-glass);
+  --color-glass2: var(--tap-glass-2);
+  --color-card:   var(--tap-card);
+  --color-page:   var(--tap-page);
+  --color-input:  var(--tap-input);
+  --color-upload: var(--tap-upload);
+  --color-tx:     var(--tap-tx);
+  --color-line:   var(--tap-line);
+  --color-select: var(--tap-select);
+  --color-hover:  var(--tap-hover);
+  --color-gear:   var(--tap-gear);
+  --color-badge:  var(--tap-badge);
+  --color-shade:  var(--tap-shade);
+  --color-overlay: var(--tap-overlay);
+  --color-drawer: var(--tap-drawer);
+  --color-wall:   var(--tap-wall);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
     "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
 }
@@ -14,29 +117,54 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: var(--font-sans);
-  color: var(--color-tap-text);
+  color: var(--tap-tx);
   overflow: hidden;
-  color-scheme: dark;
+}
+body {
+  background: var(--tap-page);
 }
 
-/* 壁纸层（非 Tailwind 表达的部分） */
+/* 壁纸层 */
 #wallpaper {
   position: fixed; inset: 0;
   background-size: cover;
   background-position: center;
   background-image: var(--wp);
-  /* 默认玻璃感渐变背景：无壁纸时也不黑屏；有壁纸时被覆盖 */
-  background-color: #1a2233;
+  background-color: var(--tap-wall);
   z-index: 0;
 }
 #wallpaper-shade {
   position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--tap-shade);
   z-index: 1;
   pointer-events: none;
 }
 
-/* 隐藏工具类（与 .hidden 并存，Tailwind 的 hidden 也保留） */
+/* ──── HTML 简写别名 ──── */
+:root {
+  --tp-glass:  var(--tap-glass);
+  --tp-glass2: var(--tap-glass-2);
+  --tp-card:   var(--tap-card);
+  --tp-page:   var(--tap-page);
+  --tp-wall:   var(--tap-wall);
+  --tp-input:  var(--tap-input);
+  --tp-upload: var(--tap-upload);
+  --tp-tx:     var(--tap-tx);
+  --tp-tx-dim: var(--tap-tx-dim);
+  --tp-tx-2:   var(--tap-tx-70);
+  --tp-tx-3:   var(--tap-tx-90);
+  --tp-line:   var(--tap-line);
+  --tp-line2:  var(--tap-line-2);
+  --tp-line3:  var(--tap-line-15);
+  --tp-select: var(--tap-select);
+  --tp-hover:  var(--tap-hover);
+  --tp-gear:   var(--tap-gear);
+  --tp-badge:  var(--tap-badge);
+  --tp-overlay:var(--tap-overlay);
+  --tp-drawer: var(--tap-drawer);
+  --tp-shade:  var(--tap-shade);
+}
+
 [hidden] { display: none !important; }
 
 /* 建议列表淡入 */
@@ -47,9 +175,7 @@ html, body {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-/* 搜索框唤出：在中心原位淡入并轻微上移。
-   注意只动 Y 不动 X —— 水平居中始终由 -translate-x-1/2（translate 属性）负责，
-   动画里若再写 translateX 会与 translate 属性叠加导致水平跳位。 */
+/* 搜索框唤出淡入往上 */
 .tap-drop-in {
   animation: tap-drop-in 240ms ease-out;
 }

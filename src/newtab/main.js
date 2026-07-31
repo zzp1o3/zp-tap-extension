@@ -15,8 +15,7 @@ import {
   loadWallpaperConfig, listWallpapers, saveWallpaperConfig,
 } from "./storage.js";
 import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain, HISTORY_PER_DOMAIN } from "./suggestions.js";
-
-// url-detect 当前未在 main.js 使用（Enter 语义改为"选中才直达"），保留模块供 settings/测试复用。
+import { isDirectUrl, toDirectUrl } from "./url-detect.js";
 
 let cfg = null;
 let wpCfg = null;
@@ -88,16 +87,18 @@ function renderEngineName() {
 
 const ENGINE_OPT_CLASS = [
   "px-3", "py-2", "rounded-xl", "cursor-pointer", "text-[14px]", "whitespace-nowrap",
-  "text-white/90", "transition-all", "duration-200", "ease-in-out",
-  "hover:bg-white/10",
+  "transition-all", "duration-200", "ease-in-out",
 ].join(" ");
-const ENGINE_OPT_ACTIVE = "bg-white/15";
+const ENGINE_OPT_DEFAULT = "text-[var(--tp-tx-3)] hover:bg-[var(--tp-hover)]";
+const ENGINE_OPT_ACTIVE = "bg-[var(--tp-glass2)] text-[var(--tp-tx)]";
+const ENGINE_OPT_INACTIVE = ENGINE_OPT_DEFAULT;
 
 function openEngineList() {
   $engineList.innerHTML = "";
   cfg.engines.forEach((e) => {
     const opt = document.createElement("div");
-    opt.className = "engine-opt " + ENGINE_OPT_CLASS + (e.id === cfg.defaultId ? " " + ENGINE_OPT_ACTIVE : "");
+    const extra = e.id === cfg.defaultId ? ENGINE_OPT_ACTIVE : ENGINE_OPT_INACTIVE;
+    opt.className = "engine-opt " + ENGINE_OPT_CLASS + " " + extra;
     opt.textContent = e.name;
     opt.addEventListener("click", () => {
       cfg.defaultId = e.id;
@@ -213,18 +214,18 @@ function openItem(it) {
 function submitQuery() {
   const q = $input.value.trim();
   if (!q) return;
-  // 默认 Enter = 用当前引擎搜索该词。
-  // 只有用户主动选中建议行后才走"直达该 URL"。
+  // 1）用户主动选中建议行 → 直达该 URL
   const sel = $panel.querySelector(".sug-row.selected");
   if (sel) {
     const url = sel.dataset.url;
     if (url) { location.href = url; return; }
   }
-  // 显式带协议的完整 URL 仍直达（用户明确意图）。
-  if (/^https?:\/\//i.test(q)) {
-    location.href = q;
+  // 2）输入像 URL → 直达该地址
+  if (isDirectUrl(q)) {
+    location.href = toDirectUrl(q);
     return;
   }
+  // 3）否则用当前引擎搜索
   location.href = buildSearchUrl(currentEngine(), q);
 }
 
@@ -369,6 +370,10 @@ function stopInterval() {
 // ---------- 初始化 ----------
 
 async function init() {
+  // 主题
+  const th = await chrome.storage.local.get("theme");
+  document.body.dataset.theme = th.theme || "system";
+
   cfg = await loadConfig();
   wpCfg = await loadWallpaperConfig();
   const all = await listWallpapers();

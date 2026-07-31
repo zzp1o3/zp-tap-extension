@@ -6,50 +6,45 @@
   <title>新标签页</title>
   <link rel="stylesheet" href="tailwind.css" />
 </head>
-<body data-state="idle">
-  <!-- 壁纸层 -->
+<body data-state="idle" data-theme="system">
   <div id="wallpaper"></div>
-  <!-- 视频背景层 -->
-  <video id="video-bg" class="hidden fixed inset-0 object-cover z-0 pointer-events-none" muted loop playsinline></video>
+  <video id="video-bg" class="hidden fixed inset-0 object-cover z-0 pointer-events-none" muted loop playsinline autoplay preload="auto"></video>
   <div id="wallpaper-shade"></div>
 
-  <!-- 顶部搜索区：毛玻璃 + 淡入 -->
-  <div id="search-box" class="tap-drop-in hidden fixed top-[18vh] left-1/2 -translate-x-1/2 flex items-center gap-2 w-[min(640px,88vw)] h-14 px-3 py-0 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_10px_40px_rgba(0,0,0,0.35)] z-10">
-    <!-- 引擎切换 -->
+  <!-- 搜索框 -->
+  <div id="search-box" class="tap-drop-in hidden fixed top-[18vh] left-1/2 -translate-x-1/2 flex items-center gap-2 w-[min(640px,88vw)] h-14 px-3 py-0 rounded-3xl border border-[var(--tp-line2)] bg-[var(--tp-glass)] backdrop-blur-md text-[var(--tp-tx)] shadow-[0_10px_40px_rgba(0,0,0,0.35)] z-10">
     <div id="engine-switch" class="relative">
       <button id="engine-name" type="button" title="切换搜索引擎"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-white/90 rounded-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10">
+              class="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-[var(--tp-tx-3)] rounded-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)]">
       </button>
-      <div id="engine-list" class="tap-fade-in hidden absolute top-[calc(100%+6px)] left-0 min-w-[140px] p-1.5 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_10px_30px_rgba(0,0,0,0.4)] z-20">
+      <div id="engine-list" class="tap-fade-in hidden absolute top-[calc(100%+6px)] left-0 min-w-[140px] p-1.5 rounded-2xl border border-[var(--tp-line)] bg-[var(--tp-glass)] backdrop-blur-md text-[var(--tp-tx)] shadow-[0_10px_30px_rgba(0,0,0,0.4)] z-20">
       </div>
     </div>
     <input id="q" type="text" autocomplete="off" autocorrect="off"
            autocapitalize="off" spellcheck="false" aria-label="搜索"
-           class="flex-1 min-w-0 bg-transparent outline-none border-0 text-white text-[17px] px-1 py-2 placeholder:text-white/50" />
+           class="flex-1 min-w-0 bg-transparent outline-none border-0 text-[var(--tp-tx)] text-[17px] px-1 py-2 placeholder:text-[var(--tp-tx-dim)]" />
   </div>
 
-  <!-- 建议面板：毛玻璃 + 列表淡入 -->
-  <div id="suggestions" class="tap-fade-in hidden fixed top-[calc(18vh+60px)] left-1/2 -translate-x-1/2 w-[min(640px,88vw)] max-h-[60vh] overflow-y-auto p-1.5 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_12px_36px_rgba(0,0,0,0.4)] z-9"></div>
+  <!-- 建议面板 -->
+  <div id="suggestions" class="tap-fade-in hidden fixed top-[calc(18vh+60px)] left-1/2 -translate-x-1/2 w-[min(640px,88vw)] max-h-[60vh] overflow-y-auto p-1.5 rounded-2xl border border-[var(--tp-line)] bg-[var(--tp-glass)] backdrop-blur-md shadow-[0_12px_36px_rgba(0,0,0,0.4)] z-9"></div>
 
-  <!-- 设置入口：默认半透明可见，hover 变实，圆形 -->
+  <!-- 设置齿轮 -->
   <button id="gear" type="button" title="设置" aria-label="设置"
-          class="fixed top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/25 opacity-35 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10 hover:opacity-100 z-30">
+          class="fixed top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-[var(--tp-tx)] bg-[var(--tp-gear)] opacity-35 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)] hover:text-[var(--tp-tx)] hover:opacity-100 z-30">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       <circle cx="12" cy="12" r="3"/>
     </svg>
   </button>
 
-  <!-- 设置：右侧推出的抽屉 -->
+  <!-- 设置抽屉 -->
   <div id="settings-drawer" class="fixed inset-0 z-40 pointer-events-none">
-    <!-- 遮罩 -->
-    <div id="settings-overlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 ease-in-out"></div>
-    <!-- 抽屉面板 -->
-    <div id="settings-panel" class="absolute top-0 right-0 h-full w-[min(440px,100vw)] bg-[#0f1013]/95 backdrop-blur-xl border-l border-white/10 translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-      <header class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
-        <h1 class="text-[18px] font-medium text-white">设置</h1>
+    <div id="settings-overlay" class="absolute inset-0 bg-[var(--tp-overlay)] opacity-0 transition-opacity duration-300 ease-in-out"></div>
+    <div id="settings-panel" class="absolute top-0 right-0 h-full w-[min(440px,100vw)] bg-[var(--tp-drawer)] backdrop-blur-xl border-l border-[var(--tp-line)] translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+      <header class="flex items-center justify-between px-5 py-4 border-b border-[var(--tp-line)] shrink-0">
+        <h1 class="text-[18px] font-medium text-[var(--tp-tx)]">设置</h1>
         <button id="settings-close" type="button" title="关闭"
-                class="w-9 h-9 rounded-lg flex items-center justify-center text-white/70 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10 hover:text-white">
+                class="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--tp-tx-2)] transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)] hover:text-[var(--tp-tx)]">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </header>

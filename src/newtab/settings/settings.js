@@ -33,8 +33,7 @@ const TRASH_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" s
 
 const ENGINE_ITEM_CLASS = [
   "flex", "items-center", "gap-2.5", "px-2.5", "py-2", "rounded-xl",
-  "border", "border-white/10", "bg-[#14161b]",
-  "transition-all", "duration-200", "ease-in-out",
+  "border", "transition-all", "duration-200", "ease-in-out",
 ].join(" ");
 
 function renderEngines() {
@@ -42,13 +41,15 @@ function renderEngines() {
   cfg.engines.forEach((e) => {
     const li = document.createElement("li");
     li.className = "engine-item " + ENGINE_ITEM_CLASS;
+    li.style.background = "var(--tp-input)";
+    li.style.borderColor = "var(--tp-line)";
     li.draggable = true;
     li.dataset.id = e.id;
     li.innerHTML = `
-      <span class="handle text-white/50 cursor-grab select-none" title="拖拽排序">${GRIP_SVG}</span>
-      <span class="name text-[14px] text-white/95 flex-none w-[110px] truncate"></span>
-      <span class="url text-[12px] text-white/55 flex-1 truncate"></span>
-      <button class="del text-white/55 transition-all duration-300 ease-in-out hover:scale-110 hover:text-red-400" type="button" title="删除">${TRASH_SVG}</button>
+      <span class="handle cursor-grab select-none" style="color:var(--tp-tx-dim)" title="拖拽排序">${GRIP_SVG}</span>
+      <span class="name text-[14px] flex-none w-[110px] truncate" style="color:var(--tp-tx-3)"></span>
+      <span class="url text-[12px] flex-1 truncate" style="color:var(--tp-tx-dim)"></span>
+      <button class="del transition-all duration-300 ease-in-out hover:scale-110 hover:text-red-400" style="color:var(--tp-tx-dim)" type="button" title="删除">${TRASH_SVG}</button>
     `;
     li.querySelector(".name").textContent = e.name + (e.id === cfg.defaultId ? " ·" : "");
     li.querySelector(".url").textContent = e.url;
@@ -75,11 +76,11 @@ function enableDrag() {
   $list.querySelectorAll(".engine-item").forEach((li) => {
     li.addEventListener("dragstart", () => { dragId = li.dataset.id; li.style.opacity = 0.4; });
     li.addEventListener("dragend", () => { li.style.opacity = ""; clearOver(); });
-    li.addEventListener("dragover", (e) => { e.preventDefault(); clearOver(); li.classList.add("border-white/40"); });
-    li.addEventListener("dragleave", () => li.classList.remove("border-white/40"));
+    li.addEventListener("dragover", (e) => { e.preventDefault(); clearOver(); li.style.borderColor = "var(--tp-tx)"; });
+    li.addEventListener("dragleave", () => { li.style.borderColor = ""; });
     li.addEventListener("drop", (e) => {
       e.preventDefault();
-      li.classList.remove("border-white/40");
+      li.style.borderColor = "";
       const targetId = li.dataset.id;
       if (!dragId || dragId === targetId) return;
       const from = cfg.engines.findIndex((x) => x.id === dragId);
@@ -92,7 +93,7 @@ function enableDrag() {
       notifyChanged();
     });
   });
-  function clearOver() { $list.querySelectorAll(".border-white/40").forEach((el) => el.classList.remove("border-white/40")); }
+  function clearOver() { $list.querySelectorAll(".engine-item").forEach((el) => { el.style.borderColor = ""; }); }
 }
 
 // 点击某行设为默认
@@ -140,7 +141,9 @@ async function renderWallpapers() {
   $wpGrid.innerHTML = "";
   for (const w of wallpapers) {
     const card = document.createElement("div");
-    card.className = "relative rounded-xl overflow-hidden border border-white/10 bg-white/[0.03]";
+    card.className = "relative rounded-xl overflow-hidden border";
+    card.style.borderColor = "var(--tp-line)";
+    card.style.background = "var(--tp-upload)";
     card.style.aspectRatio = "16 / 10";
 
     // 卡片内容：本地 blob 显示缩略图；远程 url 仅显示标签
@@ -150,7 +153,8 @@ async function renderWallpapers() {
         // 不加：播放缩略图由 canvas 第一帧抓取 cost 高。
         // 仅显示名称 + 播放图标
         const label = document.createElement("div");
-        label.className = "w-full h-full flex flex-col items-center justify-center text-white/50 text-[11px] gap-1 px-1";
+        label.className = "w-full h-full flex flex-col items-center justify-center text-[11px] gap-1 px-1";
+        label.style.color = "var(--tp-tx-dim)";
         label.innerHTML = `<span class="truncate max-w-full">${escapeHTML(w.name)}</span>`;
         card.appendChild(label);
         const play = document.createElement("div");
@@ -168,18 +172,23 @@ async function renderWallpapers() {
       }
     } else if (w.url) {
       const label = document.createElement("div");
-      label.className = "w-full h-full flex flex-col items-center justify-center text-white/55 text-[11px] gap-0.5 px-2";
-      label.innerHTML = `<span class="text-white/80 text-[12px]">${w.type === "video" ? "视频" : "图片"} URL</span><span class="truncate max-w-full">${escapeHTML(w.url)}</span>`;
+      label.className = "w-full h-full flex flex-col items-center justify-center text-[11px] gap-0.5 px-2";
+      label.style.color = "var(--tp-tx-dim)";
+      label.innerHTML = `<span class="text-[12px]" style="color:var(--tp-tx)">${w.type === "video" ? "视频" : "图片"} URL</span><span class="truncate max-w-full">${escapeHTML(w.url)}</span>`;
       card.appendChild(label);
     }
     if (w.type === "video") {
       const badge = document.createElement("span");
-      badge.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/55 text-white/80 text-[10px]";
+      badge.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px]";
+    badge.style.background = "var(--tp-badge)";
+    badge.style.color = "var(--tp-tx)";
       badge.textContent = "视频";
       card.appendChild(badge);
     }
     const btn = document.createElement("button");
-    btn.className = "absolute top-1 right-1 px-2 py-0.5 rounded-md bg-black/55 text-white text-[12px] transition-all duration-300 ease-in-out hover:bg-black/75 hover:scale-110";
+    btn.className = "absolute top-1 right-1 px-2 py-0.5 rounded-md text-[12px] transition-all duration-300 ease-in-out hover:scale-110";
+    btn.style.background = "var(--tp-badge)";
+    btn.style.color = "var(--tp-tx)";
     btn.innerHTML = TRASH_SVG;
     btn.title = "删除";
     btn.addEventListener("click", async () => {
@@ -263,11 +272,24 @@ $wpInterval.addEventListener("change", () => {
   notifyChanged();
 });
 
+// ---- 主题 ----
+
+async function applyTheme(theme) {
+  // 保存到 chrome.storage，通知父页立即生效
+  await chrome.storage.local.set({ theme });
+  document.querySelectorAll(".theme-btn").forEach((b) => {
+    b.style.background = b.dataset.theme === theme ? "var(--tp-select)" : "transparent";
+    b.style.color = b.dataset.theme === theme ? "var(--tp-tx)" : "var(--tp-tx-dim)";
+  });
+  parent.postMessage("tap:settings-changed", "*");
+}
+document.querySelectorAll(".theme-btn").forEach((b) => {
+  b.addEventListener("click", () => applyTheme(b.dataset.theme));
+});
+
 // ---- 通信 ----
 
 function notifyChanged() { parent.postMessage("tap:settings-changed", "*"); }
-// 关闭由外层抽屉的关闭按钮负责（settings.html 内无独立关闭按钮）。
-// Esc 关闭支持：
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") parent.postMessage("tap:settings-close", "*");
 });
@@ -275,6 +297,13 @@ document.addEventListener("keydown", (e) => {
 // ---- 初始化 ----
 
 async function init() {
+  // 主题按钮高亮
+  const th = (await chrome.storage.local.get("theme")).theme || "system";
+  document.querySelectorAll(".theme-btn").forEach((b) => {
+    b.style.background = b.dataset.theme === th ? "var(--tp-select)" : "transparent";
+    b.style.color = b.dataset.theme === th ? "var(--tp-tx)" : "var(--tp-tx-dim)";
+  });
+
   cfg = await loadConfig();
   wpCfg = await loadWallpaperConfig();
   wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);
