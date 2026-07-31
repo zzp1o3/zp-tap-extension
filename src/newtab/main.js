@@ -12,7 +12,7 @@ import {
   loadConfig, saveConfig, buildSearchUrl, shortcutGroup,
 } from "./engines.js";
 import {
-  loadWallpaperConfig, listWallpapers, saveWallpaperConfig,
+  loadWallpaperConfig, listWallpapers, putWallpaper, saveWallpaperConfig,
 } from "./storage.js";
 import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain } from "./suggestions.js";
 import { isDirectUrl, toDirectUrl } from "./url-detect.js";
@@ -403,6 +403,20 @@ async function init() {
   wpCfg = await loadWallpaperConfig();
   const all = await listWallpapers();
   wallpapers = all.sort((a, b) => a.createdAt - b.createdAt);
+  // 首次使用：自动添加一张默认背景
+  if (wallpapers.length === 0) {
+    const defaultBg = {
+      id: "default-bg",
+      name: "默认风景",
+      type: "image",
+      url: "https://imgtu.bzee.cn/photo/pic/ziran/fengjing/12527AvS8lbDaswWqdq3BLJYr.webp",
+      carousel: true,
+      fixed: false,
+      createdAt: Date.now(),
+    };
+    await putWallpaper(defaultBg);
+    wallpapers = [defaultBg];
+  }
   // 确保旧数据有 carousel 默认值
   for (const w of wallpapers) {
     if (w.carousel === undefined) { w.carousel = true; }

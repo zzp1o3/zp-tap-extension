@@ -1,8 +1,31 @@
-// favicon 取地址：统一走 Google s2/favicons（HTTPS，对 newtab override 页稳定可用）。
-// chrome://favicon2 在 override 页面常被 CSP 拦截，不再使用。
-export function getFaviconUrl(pageUrl) {
+// favicon 多源回退（方案 D）：
+//   1. Chrome 内置 _favicon（本机缓存，零延迟，需 favicon 权限）
+//   2. 国内 CDN favicon.cccyun.cc（无需 VPN）
+//   3. 字母徽章（纯 CSS，永不失败）
+//
+// 在 img 的 onerror 链式回退到下一源。
+
+// Chrome 扩展 _favicon API（需 manifest "favicon" 权限）
+export function getChromeFaviconUrl(pageUrl) {
+  try {
+    const extId = chrome?.runtime?.id;
+    if (extId) {
+      // MV3 favicon 权限的公开 API
+      return `chrome-extension://${extId}/_favicon/?pageUrl=${encodeURIComponent(pageUrl)}&size=32`;
+    }
+  } catch {}
+  return "";
+}
+
+// 国内 CDN 备用
+export function getCdnFaviconUrl(pageUrl) {
   let host = "";
   try { host = new URL(pageUrl).hostname; } catch { return ""; }
   if (!host) return "";
-  return `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(host)}`;
+  return `https://favicon.cccyun.cc/${encodeURIComponent(host)}`;
+}
+
+// 主入口：返回 chrome favicon URL，建议调用方在 onerror 回退 CDN
+export function getFaviconUrl(pageUrl) {
+  return getChromeFaviconUrl(pageUrl);
 }
