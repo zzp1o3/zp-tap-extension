@@ -1,7 +1,8 @@
-// favicon 多源回退（方案 D）：
+// favicon 多源回退：
 //   1. Chrome 内置 _favicon（本机缓存，零延迟，需 favicon 权限）
-//   2. 国内 CDN favicon.cccyun.cc（无需 VPN）
-//   3. 字母徽章（纯 CSS，永不失败）
+//   2. 国内 CDN favicon.cccyun.cc（无 VPN 首选）
+//   3. Google s2/favicons（VPN 用户更高质量）
+//   4. 字母徽章（纯 CSS，永不失败）
 //
 // 在 img 的 onerror 链式回退到下一源。
 
@@ -25,7 +26,15 @@ export function getCdnFaviconUrl(pageUrl) {
   return `https://favicon.cccyun.cc/${encodeURIComponent(host)}`;
 }
 
-// 主入口：返回 chrome favicon URL，建议调用方在 onerror 回退 CDN
+// Google s2 favicons（VPN 用户高质量备用）
+export function getGoogleFaviconUrl(pageUrl) {
+  let host = "";
+  try { host = new URL(pageUrl).hostname; } catch { return ""; }
+  if (!host) return "";
+  return `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(host)}`;
+}
+
+// 主入口：返回 chrome favicon URL
 export function getFaviconUrl(pageUrl) {
   return getChromeFaviconUrl(pageUrl);
 }

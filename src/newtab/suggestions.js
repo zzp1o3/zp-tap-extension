@@ -9,7 +9,7 @@
 //   matchPositionBonus: 标题/URL 以查询词开头=1.0, 子串命中=0.5, 否则 0.3（仍可能因历史命中而被搜到）
 // 历史按域名折叠：同域名取最近 2-3 条（HISTORY_PER_DOMAIN），按域名最近访问排序。
 
-import { getFaviconUrl, getCdnFaviconUrl } from "./favicon.js";
+import { getFaviconUrl, getCdnFaviconUrl, getGoogleFaviconUrl } from "./favicon.js";
 
 export const MAX_SUGGESTIONS = 8;
 
@@ -176,6 +176,12 @@ export function renderSuggestions(container, items, { onSelect, query }) {
         // Chrome _favicon 失败 → 国内 CDN
         const cdn = getCdnFaviconUrl(it.url);
         if (cdn) { icon.src = cdn; return; }
+        _fallback++; // CDN 无结果 → 直接跳到 Google
+      }
+      if (_fallback === 2) {
+        // 国内 CDN 失败或空 → Google s2（VPN 用户）
+        const gg = getGoogleFaviconUrl(it.url);
+        if (gg) { icon.src = gg; return; }
       }
       // 全部失败 → 字母徽章
       icon.replaceWith(makeLetterBadge(it));
