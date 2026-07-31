@@ -26,6 +26,21 @@ const $mediaUrl = document.getElementById("media-url");
 const $urlType = document.getElementById("url-type");
 const $addUrl = document.getElementById("add-url");
 
+// ---- toast 轻提醒 ----
+function toast(msg) {
+  const el = document.createElement("div");
+  el.textContent = msg;
+  Object.assign(el.style, {
+    position: "fixed", bottom: "20px", left: "50%", transform: "translateX(-50%)",
+    padding: "8px 18px", borderRadius: "999px", background: "rgba(0,0,0,0.85)",
+    color: "#fff", fontSize: "13px", zIndex: "200", pointerEvents: "none",
+    transition: "opacity 0.3s ease", opacity: "1",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+  });
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 300); }, 2200);
+}
+
 // lucide 图标内联
 const GRIP_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
 const TRASH_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
@@ -57,7 +72,8 @@ function renderEngines() {
     li.querySelector(".url").textContent = e.url;
     li.querySelector(".del").addEventListener("click", (ev) => {
       ev.stopPropagation();
-      if (e.builtin) { alert("内置引擎不可删除，可将其排序到下方以移出快捷组。"); return; }
+      if (e.builtin) { toast("内置引擎不可删除"); return; }
+      if (cfg.engines.length <= 1) { toast("至少保留一个搜索引擎"); return; }
       const idx = cfg.engines.findIndex((x) => x.id === e.id);
       if (idx >= 0) {
         cfg.engines.splice(idx, 1);
@@ -111,7 +127,11 @@ $list.addEventListener("click", (e) => {
 });
 
 $count.addEventListener("change", () => {
-  cfg.shortcutCount = Math.max(1, Math.min(9, parseInt($count.value, 10) || 1));
+  const min = 1, max = Math.min(9, cfg.engines.length);
+  const val = Math.max(min, Math.min(max, parseInt($count.value, 10) || min));
+  if (val !== parseInt($count.value, 10)) toast(`快捷组已调整为 ${val}`);
+  $count.value = val;
+  cfg.shortcutCount = val;
   saveConfig(cfg);
   notifyChanged();
 });
@@ -205,7 +225,11 @@ async function renderWallpapers() {
     cb.title = "参与轮播";
     cb.addEventListener("click", async (ev) => {
       ev.stopPropagation();
-      w.carousel = w.carousel === false;
+      const wouldBe = w.carousel === false;
+      if (wouldBe && wallpapers.filter((x) => x.carousel !== false).length <= 1) {
+        toast("至少保留一个轮播背景"); return;
+      }
+      w.carousel = wouldBe;
       await putWallpaper(w);
       renderWallpapers();
       notifyChanged();
@@ -226,9 +250,12 @@ async function renderWallpapers() {
     fb.title = "固定背景（固定模式下显示此项；只能固定一个）";
     fb.addEventListener("click", async (ev) => {
       ev.stopPropagation();
-      // 单选：取消所有其它项的 fixed，仅保留当前
+      const wouldBe = !w.fixed;
+      if (!wouldBe && wallpapers.filter((x) => x.fixed).length <= 1) {
+        toast("至少保留一个固定背景"); return;
+      }
       for (const x of wallpapers) x.fixed = false;
-      w.fixed = !w.fixed;
+      w.fixed = wouldBe;
       for (const x of wallpapers) await putWallpaper(x);
       renderWallpapers();
       notifyChanged();
