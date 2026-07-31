@@ -122,6 +122,7 @@ html, body {
 }
 body {
   background: var(--tap-page);
+  transition: background-color 0.45s ease, color 0.45s ease;
 }
 
 /* 壁纸层 */
@@ -132,12 +133,14 @@ body {
   background-image: var(--wp);
   background-color: var(--tap-wall);
   z-index: 0;
+  transition: background-color 0.5s ease;
 }
 #wallpaper-shade {
   position: fixed; inset: 0;
   background: var(--tap-shade);
   z-index: 1;
   pointer-events: none;
+  transition: background 0.5s ease;
 }
 
 /* ──── HTML 简写别名 ──── */
@@ -163,6 +166,14 @@ body {
   --tp-overlay:var(--tap-overlay);
   --tp-drawer: var(--tap-drawer);
   --tp-shade:  var(--tap-shade);
+}
+
+/* 抽屉面板过渡（背景通过 CSS 变量切换时平滑） */
+#settings-panel {
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+#settings-overlay {
+  transition: background-color 0.4s ease;
 }
 
 [hidden] { display: none !important; }

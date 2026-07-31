@@ -212,11 +212,13 @@ async function renderWallpapers() {
     fb.style.background = w.fixed ? "var(--tp-glass2)" : "var(--tp-badge)";
     fb.style.color = "var(--tp-tx)";
     fb.innerHTML = (w.fixed ? CHECK_SVG : "") + " 固定";
-    fb.title = "固定背景（固定模式下显示此项）";
+    fb.title = "固定背景（固定模式下显示此项；只能固定一个）";
     fb.addEventListener("click", async (ev) => {
       ev.stopPropagation();
+      // 单选：取消所有其它项的 fixed，仅保留当前
+      for (const x of wallpapers) x.fixed = false;
       w.fixed = !w.fixed;
-      await putWallpaper(w);
+      for (const x of wallpapers) await putWallpaper(x);
       renderWallpapers();
       notifyChanged();
     });

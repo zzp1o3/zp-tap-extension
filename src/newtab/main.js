@@ -302,12 +302,12 @@ window.addEventListener("message", (e) => {
 
 const $videoBg = document.getElementById("video-bg");
 
-// 隐藏视频层，恢复图片层。图片无背景时显示默认玻璃色。
+// 隐藏视频层，恢复图片层。
 function hideVideo() {
-  $videoBg.classList.add("hidden");
   $videoBg.pause();
   if ($videoBg.src && $videoBg.src.startsWith("blob:")) URL.revokeObjectURL($videoBg.src);
-  $videoBg.removeAttribute("src");
+  $videoBg.src = ""; // 清空走正常 unload，不用 removeAttribute（避免 autoplay 不触发）
+  $videoBg.classList.add("hidden");
 }
 function hideImage() {
   if (currentWpObjectUrl) { URL.revokeObjectURL(currentWpObjectUrl); currentWpObjectUrl = null; }
@@ -338,14 +338,20 @@ async function renderMedia() {
   if (!item) return;
 
   if (item.type === "video") {
-    // 视频模式：隐藏 wallpaper 层（否则背景色会挡在视频上），显示 video 层
+    // 视频模式：隐藏 wallpaper 层，显示 video 层
     $wallpaper.style.display = "none";
     $videoBg.classList.remove("hidden");
     const src = item.blob ? URL.createObjectURL(item.blob) : (item.url || "");
-    $videoBg.src = src;
-    // autoplay 属性 + 手动 play() 双保险
-    $videoBg.load();
-    setTimeout(() => $videoBg.play().catch(() => {}), 50);
+    if (!$videoBg.src || $videoBg.src !== src) {
+      $videoBg.src = src;
+      $videoBg.load();
+    }
+    // 静音视频通常允许 autoplay；loadeddata 后尝试播放更稳
+    const tryPlay = () => $videoBg.play().catch(() => {});
+    if ($videoBg.readyState >= 2) { tryPlay(); } else {
+      $videoBg.addEventListener("loadeddata", tryPlay, { once: true });
+      setTimeout(tryPlay, 300); // 超时兜底
+    }
   } else {
     // 图片模式：恢复 wallpaper 层，隐藏视频
     $wallpaper.style.display = "";
