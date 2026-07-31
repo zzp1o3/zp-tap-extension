@@ -229,11 +229,11 @@ async function renderWallpapers() {
     cb.title = "参与轮播";
     cb.addEventListener("click", async (ev) => {
       ev.stopPropagation();
-      const wouldBe = w.carousel === false;
-      if (wouldBe && wallpapers.filter((x) => x.carousel !== false).length <= 1) {
+      const tryingToUncheck = w.carousel !== false;
+      if (tryingToUncheck && wallpapers.filter((x) => x.carousel !== false).length <= 1) {
         toast("至少保留一个轮播背景"); return;
       }
-      w.carousel = wouldBe;
+      w.carousel = !tryingToUncheck;
       await putWallpaper(w);
       renderWallpapers();
       notifyChanged();
