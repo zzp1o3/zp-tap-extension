@@ -1,0 +1,9 @@
+{
+  "extName": {
+    "message": "Tap New Tab",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Minimalist new tab: switch among China-friendly search engines, smart direct from bookmarks & history, custom slideshow wallpaper."
+  }
+}

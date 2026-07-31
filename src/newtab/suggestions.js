@@ -1,0 +1,191 @@
+// 搜索建议核心：frecency 打分 + 历史按域名折叠 + UI 渲染。
+//
+// 数据源：chrome.bookmarks.search(text) 与 chrome.history.search({text, maxResults, startTime})
+// 打分公式：
+//   score = weight(type) * recencyDecay(lastVisitDays, halfLife=7d)
+//           * matchPositionBonus(text, target) * log(visitCount+1)
+//   书签 weight=1.6, 历史 weight=1.0
+//   recencyDecay = exp(-d/halfLife)
+//   matchPositionBonus: 标题/URL 以查询词开头=1.0, 子串命中=0.5, 否则 0.3（仍可能因历史命中而被搜到）
+// 历史按域名折叠：同域名取最近 2-3 条（HISTORY_PER_DOMAIN），按域名最近访问排序。
+
+import { getFaviconUrl } from "./favicon.js";
+
+export const HISTORY_PER_DOMAIN = 2;
+export const MAX_SUGGESTIONS = 8;
+
+const BOOKMARK_WEIGHT = 1.6;
+const HISTORY_WEIGHT = 1.0;
+const HALF_LIFE_DAYS = 7;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// refDate 用于测试稳定；默认调用时为当前时间
+export function scoreItem({ type, title, url, lastVisitTime, visitCount, query }, refDate = Date.now()) {
+  const q = (query || "").toLowerCase();
+  const t = (title || "").toLowerCase();
+  const u = (url || "").toLowerCase();
+  let position = 0.3;
+  if (q && (t.startsWith(q) || u.startsWith(q))) position = 1.0;
+  else if (q && (t.includes(q) || u.includes(q))) position = 0.5;
+  const weight = type === "bookmark" ? BOOKMARK_WEIGHT : HISTORY_WEIGHT;
+  const days = (refDate - (lastVisitTime || refDate)) / DAY_MS;
+  const recency = Math.exp(-days / HALF_LIFE_DAYS);
+  const freq = Math.log((visitCount || 1) + 1);
+  return weight * recency * position * freq / 10;
+}
+
+function domainOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+// 折叠历史：同域名按 lastVisitTime 取最近 N 条，并保留域名最近访问顺序
+export function foldHistoryByDomain(historyItems, perDomain = HISTORY_PER_DOMAIN) {
+  const byDomain = new Map();
+  for (const it of historyItems) {
+    const d = domainOf(it.url);
+    if (!d) continue;
+    if (!byDomain.has(d)) byDomain.set(d, []);
+    byDomain.get(d).push(it);
+  }
+  const domainLast = [];
+  for (const [d, items] of byDomain) {
+    items.sort((a, b) => (b.lastVisitTime || 0) - (a.lastVisitTime || 0));
+    const top = items.slice(0, perDomain);
+    domainLast.push({ domain: d, last: top[0].lastVisitTime || 0, items: top });
+  }
+  domainLast.sort((a, b) => b.last - a.last);
+  const out = [];
+  for (const g of domainLast) out.push(...g.items);
+  return out;
+}
+
+// 取 bookmark + history，混排打分，返回 ≤ MAX_SUGGESTIONS 条
+export async function buildSuggestions(query, refDate = Date.now()) {
+  const q = (query || "").trim();
+  if (!q) return [];
+  const [bms, hist] = await Promise.all([
+    chromeBookmarks(q),
+    chromeHistory(q),
+  ]);
+  const folded = foldHistoryByDomain(hist, HISTORY_PER_DOMAIN);
+  const scored = [];
+  for (const b of folded) {
+    scored.push({
+      type: "history",
+      title: b.title || domainOf(b.url) || b.url,
+      url: b.url,
+      lastVisitTime: b.lastVisitTime,
+      visitCount: b.visitCount,
+      score: scoreItem({ type: "history", title: b.title, url: b.url, lastVisitTime: b.lastVisitTime, visitCount: b.visitCount, query: q }, refDate),
+    });
+  }
+  for (const b of bms) {
+    scored.push({
+      type: "bookmark",
+      title: b.title || b.url,
+      url: b.url,
+      lastVisitTime: b.dateAdded || refDate,
+      visitCount: 1,
+      score: scoreItem({ type: "bookmark", title: b.title, url: b.url, lastVisitTime: b.dateAdded, visitCount: 1, query: q }, refDate),
+    });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, MAX_SUGGESTIONS);
+}
+
+function chromeBookmarks(q) {
+  return new Promise((resolve) => {
+    try {
+      chrome.bookmarks.search(q, (res) => resolve(Array.isArray(res) ? res : []));
+    } catch {
+      resolve([]);
+    }
+  });
+}
+
+function chromeHistory(q) {
+  return new Promise((resolve) => {
+    try {
+      // 近 90 天
+      const startTime = Date.now() - 90 * DAY_MS;
+      chrome.history.search({ text: q, maxResults: 2000, startTime }, (res) =>
+        resolve(Array.isArray(res) ? res : [])
+      );
+    } catch {
+      resolve([]);
+    }
+  });
+}
+
+// ---- UI 渲染 ----
+
+// 渲染建议列表到容器。返回清理函数。
+export function renderSuggestions(container, items, { onSelect, query }) {
+  container.innerHTML = "";
+  if (!items || items.length === 0) {
+    container.classList.add("hidden");
+    return () => {};
+  }
+  container.classList.remove("hidden");
+  const frag = document.createDocumentFragment();
+  items.forEach((it, idx) => {
+    const row = document.createElement("div");
+    row.className = "sug-row" + (idx === 0 ? " selected" : "");
+    row.dataset.url = it.url;
+    row.dataset.idx = String(idx);
+
+    const icon = document.createElement("img");
+    icon.className = "sug-icon";
+    icon.src = getFaviconUrl(it.url);
+    icon.alt = "";
+    icon.loading = "lazy";
+    icon.onerror = () => { icon.style.visibility = "hidden"; };
+
+    const text = document.createElement("div");
+    text.className = "sug-text";
+    const title = document.createElement("div");
+    title.className = "sug-title";
+    title.textContent = it.title || it.url;
+    const sub = document.createElement("div");
+    sub.className = "sug-sub";
+    sub.textContent = it.url;
+    text.appendChild(title);
+    text.appendChild(sub);
+
+    if (it.type === "bookmark") {
+      const mark = document.createElement("span");
+      mark.className = "sug-mark";
+      mark.title = "书签";
+      text.appendChild(mark);
+    }
+
+    row.appendChild(icon);
+    row.appendChild(text);
+    row.addEventListener("click", () => onSelect(it));
+    row.addEventListener("mouseenter", () => {
+      container.querySelectorAll(".sug-row.selected").forEach((el) => el.classList.remove("selected"));
+      row.classList.add("selected");
+    });
+    frag.appendChild(row);
+  });
+  container.appendChild(frag);
+  return () => {};
+}
+
+// 改变选中项（上下键导航）。返回当前选中项数据或 null。
+export function moveSelection(container, dir) {
+  const rows = container.querySelectorAll(".sug-row");
+  if (!rows.length) return null;
+  let i = 0;
+  for (; i < rows.length; i++) if (rows[i].classList.contains("selected")) break;
+  const next = (i + dir + rows.length) % rows.length;
+  rows.forEach((r) => r.classList.remove("selected"));
+  rows[next].classList.add("selected");
+  rows[next].scrollIntoView({ block: "nearest" });
+  return { url: rows[next].dataset.url, idx: next };
+}

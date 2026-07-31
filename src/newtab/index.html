@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新标签页</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-state="idle">
+  <!-- 壁纸层 -->
+  <div id="wallpaper"></div>
+  <div id="wallpaper-shade"></div>
+
+  <!-- 顶部搜索区 -->
+  <div id="search-box" class="hidden">
+    <div id="engine-switch">
+      <button id="engine-name" type="button" title="切换搜索引擎"></button>
+      <div id="engine-list" class="hidden"></div>
+    </div>
+    <input id="q" type="text" autocomplete="off" autocorrect="off"
+           autocapitalize="off" spellcheck="false" aria-label="搜索" />
+  </div>
+
+  <!-- 建议面板 -->
+  <div id="suggestions" class="hidden"></div>
+
+  <!-- 设置入口 -->
+  <button id="gear" type="button" title="设置" aria-label="设置">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 00-2-1.2L16.2 3h-4l-.3 2.4a7 7 0 00-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 002 1.2l.3 2.4h4l.3-2.4a7 7 0 002-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>
+    </svg>
+  </button>
+
+  <!-- 设置面板 iframe -->
+  <iframe id="settings-frame" class="hidden" title="设置"></iframe>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

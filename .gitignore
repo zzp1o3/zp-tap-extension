@@ -1,0 +1,20 @@
+# IDE
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Python（图标脚本用 uv 运行，无需写入 venv）
+__pycache__/
+*.pyc
+.venv/
+
+# 扩展打包产物
+dist/
+*.crx
+*.zip
+
+# 日志
+*.log

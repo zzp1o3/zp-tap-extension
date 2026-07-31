@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设置</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="settings-shell">
+    <header>
+      <h1>设置</h1>
+      <button id="close" type="button" title="关闭">✕</button>
+    </header>
+
+    <section>
+      <h2>搜索引擎</h2>
+      <p class="hint">拖拽排序；快捷组 = 排序后的前 <input id="shortcut-count" type="number" min="1" max="9" /> 个（用于 Ctrl+↑/↓ 切换）</p>
+      <ul id="engine-list" class="engine-list"></ul>
+      <div class="row add-row">
+        <input id="new-name" type="text" placeholder="名称" />
+        <input id="new-url" type="text" placeholder="URL 模板（含 {q}，如 https://example.com/s?q={q}）" />
+        <button id="add-engine" type="button">添加</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>壁纸</h2>
+      <p class="hint">上传本地图片，自动压缩后存于本机；无外网依赖。</p>
+      <div class="row">
+        <input id="wp-file" type="file" accept="image/*" multiple />
+      </div>
+      <div id="wp-grid" class="wp-grid"></div>
+      <div class="row">
+        <label>轮播模式：
+          <select id="wp-mode">
+            <option value="per-open">每次打开新标签页换一张</option>
+            <option value="interval">同标签页内定时切换</option>
+          </select>
+        </label>
+        <label class="interval hidden">间隔（秒）：
+          <input id="wp-interval" type="number" min="5" step="1" value="30" />
+        </label>
+      </div>
+    </section>
+
+    <footer>
+      <button id="done" type="button">完成</button>
+    </footer>
+  </div>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>
