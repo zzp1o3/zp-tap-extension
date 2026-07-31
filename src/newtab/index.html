@@ -38,8 +38,22 @@
     </svg>
   </button>
 
-  <!-- 设置面板 iframe -->
-  <iframe id="settings-frame" class="hidden fixed inset-0 w-full h-full border-0 bg-[#0f1013] z-40" title="设置"></iframe>
+  <!-- 设置：右侧推出的抽屉 -->
+  <div id="settings-drawer" class="fixed inset-0 z-40 pointer-events-none">
+    <!-- 遮罩 -->
+    <div id="settings-overlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 ease-in-out"></div>
+    <!-- 抽屉面板 -->
+    <div id="settings-panel" class="absolute top-0 right-0 h-full w-[min(440px,100vw)] bg-[#0f1013]/95 backdrop-blur-xl border-l border-white/10 translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+      <header class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+        <h1 class="text-[18px] font-medium text-white">设置</h1>
+        <button id="settings-close" type="button" title="关闭"
+                class="w-9 h-9 rounded-lg flex items-center justify-center text-white/70 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10 hover:text-white">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+      <iframe id="settings-frame" class="flex-1 border-0 w-full bg-transparent" title="设置"></iframe>
+    </div>
+  </div>
 
   <script type="module" src="main.js"></script>
 </body>

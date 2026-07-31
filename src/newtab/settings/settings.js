@@ -198,8 +198,11 @@ $wpInterval.addEventListener("change", () => {
 // ---- 通信 ----
 
 function notifyChanged() { parent.postMessage("tap:settings-changed", "*"); }
-document.getElementById("close").addEventListener("click", () => parent.postMessage("tap:settings-close", "*"));
-document.getElementById("done").addEventListener("click", () => parent.postMessage("tap:settings-close", "*"));
+// 关闭由外层抽屉的关闭按钮负责（settings.html 内无独立关闭按钮）。
+// Esc 关闭支持：
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") parent.postMessage("tap:settings-close", "*");
+});
 
 // ---- 初始化 ----
 

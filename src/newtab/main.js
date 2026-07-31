@@ -32,6 +32,32 @@ const $engine = document.getElementById("engine-name");
 const $engineList = document.getElementById("engine-list");
 const $gear = document.getElementById("gear");
 const $settingsFrame = document.getElementById("settings-frame");
+const $settingsDrawer = document.getElementById("settings-drawer");
+const $settingsOverlay = document.getElementById("settings-overlay");
+const $settingsPanel = document.getElementById("settings-panel");
+const $settingsClose = document.getElementById("settings-close");
+
+let settingsOpen = false;
+function openSettings() {
+  if (settingsOpen) return;
+  $settingsFrame.src = "settings/settings.html";
+  $settingsDrawer.classList.remove("pointer-events-none");
+  // 下一帧再触发过渡，确保初始 translate-x-full 已生效
+  requestAnimationFrame(() => {
+    $settingsPanel.classList.remove("translate-x-full");
+    $settingsOverlay.style.opacity = "1";
+  });
+  settingsOpen = true;
+}
+function closeSettings() {
+  if (!settingsOpen) return;
+  $settingsPanel.classList.add("translate-x-full");
+  $settingsOverlay.style.opacity = "0";
+  settingsOpen = false;
+  // 等过渡结束再摘 src，避免 iframe 在滑出途中突白
+  setTimeout(() => { if (!settingsOpen) $settingsFrame.src = ""; }, 320);
+  $settingsDrawer.classList.add("pointer-events-none");
+}
 
 // ---------- 引擎 ----------
 
@@ -258,14 +284,12 @@ document.addEventListener("click", (e) => {
 
 // ---------- 设置 ----------
 
-$gear.addEventListener("click", () => {
-  $settingsFrame.src = "settings/settings.html";
-  $settingsFrame.classList.remove("hidden");
-});
+$gear.addEventListener("click", openSettings);
+$settingsClose.addEventListener("click", closeSettings);
+$settingsOverlay.addEventListener("click", closeSettings);
 window.addEventListener("message", (e) => {
   if (e.data === "tap:settings-close") {
-    $settingsFrame.src = "";
-    $settingsFrame.classList.add("hidden");
+    closeSettings();
   } else if (e.data === "tap:settings-changed") {
     init(); // 配置变更后重新加载
   }
