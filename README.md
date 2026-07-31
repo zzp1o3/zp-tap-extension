@@ -47,7 +47,7 @@ src/newtab/
   settings/
     settings.html settings.css settings.js
 src/background/sw.js      MV3 service worker（占位）
-src/_locales/             i18n（中/英）
+_locales/                 i18n（中/英，Chrome 要求置于扩展根目录）
 ```
 
 ## 开发
