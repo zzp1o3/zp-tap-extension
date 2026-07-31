@@ -1,0 +1,27 @@
+{
+  "name": "zp-tap-extension",
+  "version": "1.0.0",
+  "description": "一个极简的 Chrome / Edge 新标签页扩展。",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i src/newtab/tailwind.input.css -o src/newtab/tailwind.css --content \"src/newtab/**/*.html,src/newtab/**/*.js\"",
+    "icons": "uv run --with=pillow python scripts/gen_icons.py",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zzp1o3/zp-tap-extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/zzp1o3/zp-tap-extension/issues"
+  },
+  "homepage": "https://github.com/zzp1o3/zp-tap-extension#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

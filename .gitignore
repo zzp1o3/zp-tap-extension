@@ -2,6 +2,10 @@
 .idea/
 .vscode/
 
+# Node（Tailwind 构建链依赖；产物 tailwind.css 需提交，故仅忽略 node_modules）
+node_modules/
+package-lock.json
+
 # OS
 Thumbs.db
 .DS_Store

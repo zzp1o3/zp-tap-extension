@@ -124,7 +124,27 @@ function chromeHistory(q) {
 
 // ---- UI 渲染 ----
 
+// 书签标记 SVG（lucide star）内联，颜色 currentColor
+const STAR_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+const ROW_CLASS = [
+  "flex", "items-center", "gap-3", "px-3", "py-2", "rounded-xl",
+  "cursor-pointer", "transition-all", "duration-200", "ease-in-out",
+  "hover:bg-white/10", "hover:scale-[1.01]",
+].join(" ");
+const ROW_SELECTED = "bg-white/15";
+const ICON_CLASS = [
+  "w-5", "h-5", "rounded", "flex-none",
+  "bg-white/5",
+].join(" ");
+const TEXT_CLASS = "flex-1 min-w-0 relative";
+const TITLE_CLASS = "text-[14px] truncate text-white/95";
+const SUB_CLASS = "text-[12px] truncate text-white/55";
+const MARK_CLASS = "absolute -top-0.5 right-0 text-amber-300/90";
+
 // 渲染建议列表到容器。返回清理函数。
+// 注意：不预选第 0 行 —— 默认 Enter 走"用当前引擎搜索该词"，
+// 用户需按上下键或鼠标选中某行后才走"直达该 URL"。
 export function renderSuggestions(container, items, { onSelect, query }) {
   container.innerHTML = "";
   if (!items || items.length === 0) {
@@ -135,32 +155,33 @@ export function renderSuggestions(container, items, { onSelect, query }) {
   const frag = document.createDocumentFragment();
   items.forEach((it, idx) => {
     const row = document.createElement("div");
-    row.className = "sug-row" + (idx === 0 ? " selected" : "");
+    row.className = "sug-row " + ROW_CLASS;
     row.dataset.url = it.url;
     row.dataset.idx = String(idx);
 
     const icon = document.createElement("img");
-    icon.className = "sug-icon";
+    icon.className = "sug-icon " + ICON_CLASS;
     icon.src = getFaviconUrl(it.url);
     icon.alt = "";
     icon.loading = "lazy";
     icon.onerror = () => { icon.style.visibility = "hidden"; };
 
     const text = document.createElement("div");
-    text.className = "sug-text";
+    text.className = "sug-text " + TEXT_CLASS;
     const title = document.createElement("div");
-    title.className = "sug-title";
+    title.className = "sug-title " + TITLE_CLASS;
     title.textContent = it.title || it.url;
     const sub = document.createElement("div");
-    sub.className = "sug-sub";
+    sub.className = "sug-sub " + SUB_CLASS;
     sub.textContent = it.url;
     text.appendChild(title);
     text.appendChild(sub);
 
     if (it.type === "bookmark") {
       const mark = document.createElement("span");
-      mark.className = "sug-mark";
+      mark.className = "sug-mark " + MARK_CLASS;
       mark.title = "书签";
+      mark.innerHTML = STAR_SVG;
       text.appendChild(mark);
     }
 
@@ -168,8 +189,12 @@ export function renderSuggestions(container, items, { onSelect, query }) {
     row.appendChild(text);
     row.addEventListener("click", () => onSelect(it));
     row.addEventListener("mouseenter", () => {
-      container.querySelectorAll(".sug-row.selected").forEach((el) => el.classList.remove("selected"));
+      container.querySelectorAll(".sug-row.selected").forEach((el) => {
+        el.classList.remove("selected");
+        el.classList.remove(ROW_SELECTED);
+      });
       row.classList.add("selected");
+      row.classList.add(ROW_SELECTED);
     });
     frag.appendChild(row);
   });
@@ -178,14 +203,21 @@ export function renderSuggestions(container, items, { onSelect, query }) {
 }
 
 // 改变选中项（上下键导航）。返回当前选中项数据或 null。
+// 未选中时第一次按方向键：ArrowDown 从 0 开始，ArrowUp 从末尾开始。
 export function moveSelection(container, dir) {
   const rows = container.querySelectorAll(".sug-row");
   if (!rows.length) return null;
-  let i = 0;
-  for (; i < rows.length; i++) if (rows[i].classList.contains("selected")) break;
-  const next = (i + dir + rows.length) % rows.length;
-  rows.forEach((r) => r.classList.remove("selected"));
+  let i = -1;
+  for (let k = 0; k < rows.length; k++) if (rows[k].classList.contains("selected")) { i = k; break; }
+  let next;
+  if (i === -1) {
+    next = dir > 0 ? 0 : rows.length - 1;
+  } else {
+    next = (i + dir + rows.length) % rows.length;
+  }
+  rows.forEach((r) => { r.classList.remove("selected"); r.classList.remove(ROW_SELECTED); });
   rows[next].classList.add("selected");
+  rows[next].classList.add(ROW_SELECTED);
   rows[next].scrollIntoView({ block: "nearest" });
   return { url: rows[next].dataset.url, idx: next };
 }

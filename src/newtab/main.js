@@ -15,7 +15,8 @@ import {
   loadWallpaperConfig, listWallpapers, getWallpaper, saveWallpaperConfig,
 } from "./storage.js";
 import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain, HISTORY_PER_DOMAIN } from "./suggestions.js";
-import { isDirectUrl, toDirectUrl } from "./url-detect.js";
+
+// url-detect 当前未在 main.js 使用（Enter 语义改为"选中才直达"），保留模块供 settings/测试复用。
 
 let cfg = null;
 let wpCfg = null;
@@ -39,14 +40,36 @@ function currentEngine() {
 }
 
 function renderEngineName() {
-  $engine.textContent = currentEngine().name;
+  $engine.innerHTML = "";
+  const label = document.createElement("span");
+  label.textContent = currentEngine().name;
+  const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  chevron.setAttribute("viewBox", "0 0 24 24");
+  chevron.setAttribute("width", "14");
+  chevron.setAttribute("height", "14");
+  chevron.setAttribute("fill", "none");
+  chevron.setAttribute("stroke", "currentColor");
+  chevron.setAttribute("stroke-width", "2");
+  chevron.setAttribute("stroke-linecap", "round");
+  chevron.setAttribute("stroke-linejoin", "round");
+  chevron.innerHTML = `<path d="m6 9 6 6 6-6"/>`;
+  chevron.style.opacity = "0.7";
+  $engine.appendChild(label);
+  $engine.appendChild(chevron);
 }
+
+const ENGINE_OPT_CLASS = [
+  "px-3", "py-2", "rounded-xl", "cursor-pointer", "text-[14px]", "whitespace-nowrap",
+  "text-white/90", "transition-all", "duration-200", "ease-in-out",
+  "hover:bg-white/10",
+].join(" ");
+const ENGINE_OPT_ACTIVE = "bg-white/15";
 
 function openEngineList() {
   $engineList.innerHTML = "";
   cfg.engines.forEach((e) => {
     const opt = document.createElement("div");
-    opt.className = "engine-opt" + (e.id === cfg.defaultId ? " active" : "");
+    opt.className = "engine-opt " + ENGINE_OPT_CLASS + (e.id === cfg.defaultId ? " " + ENGINE_OPT_ACTIVE : "");
     opt.textContent = e.name;
     opt.addEventListener("click", () => {
       cfg.defaultId = e.id;
@@ -162,15 +185,17 @@ function openItem(it) {
 function submitQuery() {
   const q = $input.value.trim();
   if (!q) return;
-  // URL 检测优先于选中行：输入像 URL 时始终直达，避免被预选的历史项劫持。
-  if (isDirectUrl(q)) {
-    location.href = toDirectUrl(q);
-    return;
-  }
+  // 默认 Enter = 用当前引擎搜索该词。
+  // 只有用户主动选中建议行后才走"直达该 URL"。
   const sel = $panel.querySelector(".sug-row.selected");
   if (sel) {
     const url = sel.dataset.url;
     if (url) { location.href = url; return; }
+  }
+  // 显式带协议的完整 URL 仍直达（用户明确意图）。
+  if (/^https?:\/\//i.test(q)) {
+    location.href = q;
+    return;
   }
   location.href = buildSearchUrl(currentEngine(), q);
 }

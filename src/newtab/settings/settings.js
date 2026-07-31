@@ -20,26 +20,37 @@ const $wpFile = document.getElementById("wp-file");
 const $wpGrid = document.getElementById("wp-grid");
 const $wpMode = document.getElementById("wp-mode");
 const $wpInterval = document.getElementById("wp-interval");
-const $intervalLabel = document.querySelector(".row .interval");
+const $intervalLabel = document.querySelector("label.interval");
+
+// lucide 图标内联
+const GRIP_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
+const TRASH_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
 
 // ---- 引擎 ----
+
+const ENGINE_ITEM_CLASS = [
+  "flex", "items-center", "gap-2.5", "px-2.5", "py-2", "rounded-xl",
+  "border", "border-white/10", "bg-[#14161b]",
+  "transition-all", "duration-200", "ease-in-out",
+].join(" ");
 
 function renderEngines() {
   $list.innerHTML = "";
   cfg.engines.forEach((e) => {
     const li = document.createElement("li");
-    li.className = "engine-item";
+    li.className = "engine-item " + ENGINE_ITEM_CLASS;
     li.draggable = true;
     li.dataset.id = e.id;
     li.innerHTML = `
-      <span class="handle" title="拖拽排序">⋮⋮</span>
-      <span class="name"></span>
-      <span class="url"></span>
-      <button class="del" type="button">删除</button>
+      <span class="handle text-white/50 cursor-grab select-none" title="拖拽排序">${GRIP_SVG}</span>
+      <span class="name text-[14px] text-white/95 flex-none w-[110px] truncate"></span>
+      <span class="url text-[12px] text-white/55 flex-1 truncate"></span>
+      <button class="del text-white/55 transition-all duration-300 ease-in-out hover:scale-110 hover:text-red-400" type="button" title="删除">${TRASH_SVG}</button>
     `;
     li.querySelector(".name").textContent = e.name + (e.id === cfg.defaultId ? " ·" : "");
     li.querySelector(".url").textContent = e.url;
-    li.querySelector(".del").addEventListener("click", () => {
+    li.querySelector(".del").addEventListener("click", (ev) => {
+      ev.stopPropagation();
       if (e.builtin) { alert("内置引擎不可删除，可将其排序到下方以移出快捷组。"); return; }
       const idx = cfg.engines.findIndex((x) => x.id === e.id);
       if (idx >= 0) {
@@ -59,13 +70,13 @@ function renderEngines() {
 function enableDrag() {
   let dragId = null;
   $list.querySelectorAll(".engine-item").forEach((li) => {
-    li.addEventListener("dragstart", () => { dragId = li.dataset.id; li.classList.add("dragging"); });
-    li.addEventListener("dragend", () => { li.classList.remove("dragging"); clearOver(); });
-    li.addEventListener("dragover", (e) => { e.preventDefault(); clearOver(); li.classList.add("drag-over"); });
-    li.addEventListener("dragleave", () => li.classList.remove("drag-over"));
+    li.addEventListener("dragstart", () => { dragId = li.dataset.id; li.style.opacity = 0.4; });
+    li.addEventListener("dragend", () => { li.style.opacity = ""; clearOver(); });
+    li.addEventListener("dragover", (e) => { e.preventDefault(); clearOver(); li.classList.add("border-white/40"); });
+    li.addEventListener("dragleave", () => li.classList.remove("border-white/40"));
     li.addEventListener("drop", (e) => {
       e.preventDefault();
-      li.classList.remove("drag-over");
+      li.classList.remove("border-white/40");
       const targetId = li.dataset.id;
       if (!dragId || dragId === targetId) return;
       const from = cfg.engines.findIndex((x) => x.id === dragId);
@@ -78,7 +89,7 @@ function enableDrag() {
       notifyChanged();
     });
   });
-  function clearOver() { $list.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over")); }
+  function clearOver() { $list.querySelectorAll(".border-white/40").forEach((el) => el.classList.remove("border-white/40")); }
 }
 
 // 点击某行设为默认
@@ -125,17 +136,21 @@ async function renderWallpapers() {
   // wallpapers 已含完整 blob（listWallpapers 走 getAll），无需逐张再读 IndexedDB
   for (const w of wallpapers) {
     const card = document.createElement("div");
-    card.className = "wp-card";
+    card.className = "relative rounded-xl overflow-hidden border border-white/10";
+    card.style.aspectRatio = "16 / 10";
     if (w.blob) {
       const img = document.createElement("img");
       const u = URL.createObjectURL(w.blob);
       thumbUrls.add(u);
       img.src = u;
       img.alt = w.name;
+      img.className = "w-full h-full object-cover block";
       card.appendChild(img);
     }
     const btn = document.createElement("button");
-    btn.className = "del"; btn.textContent = "删除";
+    btn.className = "absolute top-1 right-1 px-2 py-0.5 rounded-md bg-black/55 text-white text-[12px] transition-all duration-300 ease-in-out hover:bg-black/75 hover:scale-110";
+    btn.innerHTML = TRASH_SVG;
+    btn.title = "删除";
     btn.addEventListener("click", async () => {
       await delWallpaper(w.id);
       wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);

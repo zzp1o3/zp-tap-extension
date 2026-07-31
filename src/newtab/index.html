@@ -4,35 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>新标签页</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="tailwind.css" />
 </head>
 <body data-state="idle">
   <!-- 壁纸层 -->
   <div id="wallpaper"></div>
   <div id="wallpaper-shade"></div>
 
-  <!-- 顶部搜索区 -->
-  <div id="search-box" class="hidden">
-    <div id="engine-switch">
-      <button id="engine-name" type="button" title="切换搜索引擎"></button>
-      <div id="engine-list" class="hidden"></div>
+  <!-- 顶部搜索区：毛玻璃 + 淡入 -->
+  <div id="search-box" class="tap-drop-in hidden fixed top-[18vh] left-1/2 -translate-x-1/2 flex items-center gap-2 w-[min(640px,88vw)] h-14 px-3 py-0 rounded-3xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_10px_40px_rgba(0,0,0,0.35)] z-10">
+    <!-- 引擎切换 -->
+    <div id="engine-switch" class="relative">
+      <button id="engine-name" type="button" title="切换搜索引擎"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-white/90 rounded-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10">
+      </button>
+      <div id="engine-list" class="tap-fade-in hidden absolute top-[calc(100%+6px)] left-0 min-w-[140px] p-1.5 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_10px_30px_rgba(0,0,0,0.4)] z-20">
+      </div>
     </div>
     <input id="q" type="text" autocomplete="off" autocorrect="off"
-           autocapitalize="off" spellcheck="false" aria-label="搜索" />
+           autocapitalize="off" spellcheck="false" aria-label="搜索"
+           class="flex-1 min-w-0 bg-transparent outline-none border-0 text-white text-[17px] px-1 py-2 placeholder:text-white/50" />
   </div>
 
-  <!-- 建议面板 -->
-  <div id="suggestions" class="hidden"></div>
+  <!-- 建议面板：毛玻璃 + 列表淡入 -->
+  <div id="suggestions" class="tap-fade-in hidden fixed top-[calc(18vh+60px)] left-1/2 -translate-x-1/2 w-[min(640px,88vw)] max-h-[60vh] overflow-y-auto p-1.5 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md text-white shadow-[0_12px_36px_rgba(0,0,0,0.4)] z-9"></div>
 
-  <!-- 设置入口 -->
-  <button id="gear" type="button" title="设置" aria-label="设置">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 00-2-1.2L16.2 3h-4l-.3 2.4a7 7 0 00-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 002 1.2l.3 2.4h4l.3-2.4a7 7 0 002-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>
+  <!-- 设置入口：默认半透明可见，hover 变实，圆形 -->
+  <button id="gear" type="button" title="设置" aria-label="设置"
+          class="fixed top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/25 opacity-35 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/10 hover:opacity-100 z-30">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      <circle cx="12" cy="12" r="3"/>
     </svg>
   </button>
 
   <!-- 设置面板 iframe -->
-  <iframe id="settings-frame" class="hidden" title="设置"></iframe>
+  <iframe id="settings-frame" class="hidden fixed inset-0 w-full h-full border-0 bg-[#0f1013] z-40" title="设置"></iframe>
 
   <script type="module" src="main.js"></script>
 </body>

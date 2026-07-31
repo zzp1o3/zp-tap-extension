@@ -39,21 +39,28 @@
 
 ```
 manifest.json
-icons/                   扩展图标
-scripts/gen_icons.py     图标生成脚本（开发用，已生成 icons/*）
+icons/                   扩展图标（由 icons/zp-tap.png 派生）
+scripts/gen_icons.py     图标生成脚本（开发用）
 src/newtab/
-  index.html styles.css main.js
-  engines.js  storage.js suggestions.js url-detect.js favicon.js
+  index.html main.js     新标签页
+  tailwind.css           Tailwind 产物（已提交，改样式后用 npm run build:css 重生成）
+  tailwind.input.css     Tailwind 源与主题
+  engines.js storage.js suggestions.js url-detect.js favicon.js
   settings/
-    settings.html settings.css settings.js
+    settings.html settings.js
 src/background/sw.js      MV3 service worker（占位）
 _locales/                 i18n（中/英，Chrome 要求置于扩展根目录）
+package.json              devDependencies: tailwindcss（仅开发时用）
 ```
 
 ## 开发
 
-- 纯原生 HTML/CSS/JS，无构建步骤。
-- 重新生成图标：`uv run --with=pillow python scripts/gen_icons.py`
+- 纯原生 HTML/JS，无运行时构建；扩展直接加载本目录即可。
+- 样式基于 **Tailwind CSS v4**（已预生成 `src/newtab/tailwind.css` 并提交，加载即可用）。
+  修改样式后重生成：`npm install && npm run build:css`（或 `./node_modules/.bin/tailwindcss -i src/newtab/tailwind.input.css -o src/newtab/tailwind.css --content "src/newtab/**/*.html,src/newtab/**/*.js"`）。
+- 图标来自 `icons/zp-tap.png`，重新派生各尺寸：`uv run --with=pillow python scripts/gen_icons.py`。
+
+- 纯原生 HTML/JS，运行时无构建；样式经 Tailwind 预生成。
 
 ## License
 

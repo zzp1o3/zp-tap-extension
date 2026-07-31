@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Tap 新标签页主题：克制、毛玻璃、壁纸为主角。
+   不用渐变背景、不用彩色光晕、不用重拟物、不用复杂动画。 */
+
+@theme {
+  --color-tap-text: #ffffff;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+    "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+}
+
+/* 全局基础 */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-tap-text);
+  overflow: hidden;
+  color-scheme: dark;
+}
+
+/* 壁纸层（非 Tailwind 表达的部分） */
+#wallpaper {
+  position: fixed; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-image: var(--wp);
+  /* 默认玻璃感渐变背景：无壁纸时也不黑屏；有壁纸时被覆盖 */
+  background-color: #1a2233;
+  z-index: 0;
+}
+#wallpaper-shade {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 隐藏工具类（与 .hidden 并存，Tailwind 的 hidden 也保留） */
+[hidden] { display: none !important; }
+
+/* 建议列表淡入 */
+.tap-fade-in {
+  animation: tap-fade-in 200ms ease-out;
+}
+@keyframes tap-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* 搜索框唤出淡入 */
+.tap-drop-in {
+  animation: tap-drop-in 220ms ease-out;
+}
+@keyframes tap-drop-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
