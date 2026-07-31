@@ -353,9 +353,11 @@ window.addEventListener("message", (e) => {
     closeSettings();
   } else if (e.data === "tap:settings-changed") {
     // 配置变更：仅刷新 UI 显隐（不动轮播/壁纸状态）
-    uiConfig = await loadUiConfig();
-    applySearchBoxMode(uiConfig);
-    applyGearMode(uiConfig);
+    loadUiConfig().then((ui) => {
+      uiConfig = ui;
+      applySearchBoxMode(uiConfig);
+      applyGearMode(uiConfig);
+    });
   }
 });
 
