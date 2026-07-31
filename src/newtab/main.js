@@ -159,23 +159,11 @@ document.getElementById("wallpaper").addEventListener("click", () => {
   if (document.body.dataset.state === "idle") $focusAnchor.focus();
 });
 
-// 激进焦点重夺：Chrome 新标签页在加载完成后会强占地址栏焦点，
-// 需要在多个时机反复把焦点抢回来。
-function claimFocus() {
+// 焦点重夺：autofocus 已在加载瞬间抢一次，500ms 后补一次防 Chrome 后续抢占，
+// 之后不再跟踪（避免干扰用户主动使用地址栏）。
+setTimeout(() => {
   if (document.body.dataset.state === "idle") $focusAnchor.focus();
-}
-// 页面加载后多阶段重夺
-requestAnimationFrame(() => { claimFocus();
-  setTimeout(claimFocus, 50);
-  setTimeout(claimFocus, 200);
-  setTimeout(claimFocus, 500);
-});
-// idle 态若焦点被外部抢走（地址栏/扩展弹窗），自动拉回
-document.addEventListener("focusout", (e) => {
-  if (document.body.dataset.state === "idle" && !e.relatedTarget) {
-    setTimeout(claimFocus, 10);
-  }
-});
+}, 500);
 
 // ---------- 建议 ----------
 
