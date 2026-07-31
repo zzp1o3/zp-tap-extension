@@ -1,66 +1,73 @@
 # Tap 新标签页
 
-一个极简的 Chrome / Edge 新标签页扩展。
+极简 Chrome / Edge 新标签页扩展，纯本地，零运行时构建。
 
 ## 特性
 
-- **极简默认态**：打开新标签页只见一张壁纸，无可视控件。
-- **打字即唤出**：按下任意字符键即唤出顶部搜索框与建议面板；功能键不触发。
-- **国内搜索引擎切换**：
-  - 预置：百度 / 必应中国版 / 搜狗 / 360 / 知乎 / 微博 / 哔哩哔哩
-  - 支持自定义任意引擎（名称 + 含 `{q}` 的 URL 模板）并拖拽排序
-  - 下拉选择器 + **Ctrl+↑/Ctrl+↓** 在「快捷组」内循环（快捷组 = 排序后的前 N 项，N 可在设置中配置）
-- **智能直达**：搜索建议混排书签与浏览历史，统一 `frecency` 打分（频次 × 最近访问衰减 × 命中位置 × 书签加权），历史按域名折叠取最近 2-3 条。
-- **回车语义**：输入被判定为 URL → 直达该站点；否则用当前引擎搜索。
-- **自定义轮播壁纸**：上传本地图片，自动压缩后存于本机 IndexedDB，无外网依赖；支持「每次打开换一张」与「定时间隔切换」两种模式。
-- 全部数据存于本地，不联网、不上传、无账号。
+- **极简默认态**：打开新标签页只见背景，无可视控件。首次使用自动展示默认风景背景。
+- **打字即唤出**：按下任意字符键即唤出顶部搜索框与建议面板，Esc 回纯背景。
+- **搜索引擎切换**：
+  - 预置：必应 / 哔哩哔哩 / GitHub / 百度 / 知乎 / Google / Yandex
+  - 支持自定义任意引擎（名称 + `{q}` URL 模板）并拖拽排序
+  - 下拉选择 + **Ctrl+↑/Ctrl+↓** 在快捷组内循环
+- **智能直达**：输入建议混排书签与浏览历史，frecency 打分（频次 × 近期 × 命中位置 × 书签加权），同域名只取访问次数最高的一条。
+- **回车语义**：选中建议 → 直达该 URL；输入像域名（含 TLD）→ 直达；否则用当前引擎搜索。
+- **背景媒体**：
+  - 支持图片/视频，本地上传或远程 URL
+  - 客户端自动压缩图片；视频原样保存，上传时自动抓取首帧缩略图
+  - 三种轮播模式：「每次打开换一张」「定时切换」「固定」
+  - 每张卡片可勾选参与轮播 / 设为固定背景
+- **主题系统**：深色（黑底白字）/ 浅色（白底黑字）/ 随系统，切主题有 0.5s 渐变过渡。
+- **favicon 四源回退**：Chrome 本地缓存 → 国内 CDN → Google s2 → 首字母徽章。
+- **约束保护**：至少保留一个轮播项、一个固定项、一个搜索引擎。删光媒体/引擎时自动回退默认值。
+- 全部数据存于本机，无账号、不上传。
 
-## 安装（开发模式）
+## 安装
 
-1. 克隆仓库：`git clone <repo-url>`
-2. 打开 Chrome，进入 `chrome://extensions`
-3. 开启右上角「开发者模式」
-4. 点击「加载已解压的扩展程序」，选择本仓库根目录
-5. 打开一个新标签页即可看到效果
+```bash
+git clone git@github.com:zzp1o3/zp-tap-extension.git
+```
 
-## 权限说明
+Chrome / Edge → `chrome://extensions` → 开启开发者模式 → 加载已解压的扩展程序 → 选择仓库根目录。
+
+打开新标签页即可使用。
+
+## 权限
 
 | 权限 | 用途 |
 |------|------|
-| `bookmarks` | 搜索书签生成直达建议 |
-| `history` | 搜索浏览历史生成直达建议 |
-| `storage` | 存储引擎列表、快捷组、壁纸配置 |
-| `unlimitedStorage` | 壁纸可能较大，避开 `storage.local` 的 10MB 限制（壁纸实际存 IndexedDB，此项为冗余保险） |
-| `favicon` | 在建议项旁展示站点图标 |
-
-所有数据仅存于本机，扩展不发起任何外部网络请求（favicon 由浏览器内置 `chrome://favicon2` 解析）。
+| `bookmarks` | 搜索书签生成建议 |
+| `history` | 搜索浏览历史生成建议 |
+| `storage` | 存储引擎列表、快捷组、主题、壁纸配置 |
+| `unlimitedStorage` | IndexedDB 壁纸/视频配额冗余 |
+| `favicon` | 启用 Chrome 内置 favicon API（四源回退第一级） |
 
 ## 目录结构
 
 ```
 manifest.json
-icons/                   扩展图标（由 icons/zp-tap.png 派生）
-scripts/gen_icons.py     图标生成脚本（开发用）
+_locales/                         i18n（中/英）
+icons/                            扩展图标（由 icons/zp-tap.png 派生）
+scripts/gen_icons.py              图标生成脚本
+src/background/sw.js              MV3 service worker（占位）
 src/newtab/
-  index.html main.js     新标签页
-  tailwind.css           Tailwind 产物（已提交，改样式后用 npm run build:css 重生成）
-  tailwind.input.css     Tailwind 源与主题
-  engines.js storage.js suggestions.js url-detect.js favicon.js
+  index.html main.js              新标签页主入口
+  tailwind.css                    Tailwind 产物（已提交，直接可用）
+  tailwind.input.css              Tailwind 源文件 + 主题变量
+  engines.js                      搜索引擎配置
+  storage.js                      IndexedDB + chrome.storage 封装
+  suggestions.js                  搜索建议 + 打分 + 渲染
+  url-detect.js                   URL 判定器
+  favicon.js                      四源 favicon 回退
   settings/
-    settings.html settings.js
-src/background/sw.js      MV3 service worker（占位）
-_locales/                 i18n（中/英，Chrome 要求置于扩展根目录）
-package.json              devDependencies: tailwindcss（仅开发时用）
+    settings.html settings.js     右侧抽屉设置面板
 ```
 
 ## 开发
 
-- 纯原生 HTML/JS，无运行时构建；扩展直接加载本目录即可。
-- 样式基于 **Tailwind CSS v4**（已预生成 `src/newtab/tailwind.css` 并提交，加载即可用）。
-  修改样式后重生成：`npm install && npm run build:css`（或 `./node_modules/.bin/tailwindcss -i src/newtab/tailwind.input.css -o src/newtab/tailwind.css --content "src/newtab/**/*.html,src/newtab/**/*.js"`）。
-- 图标来自 `icons/zp-tap.png`，重新派生各尺寸：`uv run --with=pillow python scripts/gen_icons.py`。
-
-- 纯原生 HTML/JS，运行时无构建；样式经 Tailwind 预生成。
+- 纯原生 HTML/JS，无运行时构建依赖，`npm install` 仅用于修改样式后重生成 Tailwind CSS。
+- 修改 `tailwind.input.css` 后：`npm install && npm run build:css`
+- 重派生图标：`uv run --with=pillow python scripts/gen_icons.py`
 
 ## License
 
