@@ -21,4 +21,5 @@ dist/
 *.zip
 
 # 日志
-*.logtap-newtab.zip
+*.log
+tap-newtab.zip
