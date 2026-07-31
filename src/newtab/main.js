@@ -39,6 +39,7 @@ const $settingsDrawer = document.getElementById("settings-drawer");
 const $settingsOverlay = document.getElementById("settings-overlay");
 const $settingsPanel = document.getElementById("settings-panel");
 const $settingsClose = document.getElementById("settings-close");
+const $focusAnchor = document.getElementById("focus-anchor");
 
 let settingsOpen = false;
 function openSettings() {
@@ -59,6 +60,7 @@ function closeSettings() {
   settingsOpen = false;
   setTimeout(() => { if (!settingsOpen) $settingsFrame.src = ""; }, 320);
   $settingsDrawer.classList.add("pointer-events-none");
+  $focusAnchor.focus(); // 关闭设置后焦点归锚
 }
 
 // ---------- UI 配置（搜索框/齿轮显隐） ----------
@@ -77,38 +79,38 @@ async function loadUiConfig() {
 function applySearchBoxMode(ui) {
   if (ui.hideSearchBox) {
     deactivate();
+    $box.classList.remove("search-faded");
   } else {
     document.body.dataset.state = "active";
     $box.classList.remove("hidden");
+    $box.classList.add("search-faded"); // 常驻未聚焦时更透明
   }
 }
 
 // 应用齿轮显隐：
-//   hideGear=false → 齿轮常驻（半透明）
+//   hideGear=false → 齿轮常驻（半透明），无贴边箭头
 //   hideGear=true  → 齿轮藏在右侧，贴边留触发箭头，悬停滑出
 function applyGearMode(ui) {
   if (ui.hideGear) {
-    $gearWrap.classList.add("hidden");
-    // 齿轮藏起：translate-x 移出屏幕，箭头可见
-    $gear.style.transform = "translateX(140%)";
+    $gear.style.transform = "translateX(150%)";
     $gear.style.opacity = "0.35";
-    $gearTab.classList.remove("hidden");
+    $gearTab.style.display = "flex"; // 箭头常驻可见
   } else {
     $gear.style.transform = "";
     $gear.style.opacity = "";
-    $gearTab.classList.add("hidden");
-    $gearWrap.classList.remove("hidden");
+    $gearTab.style.display = "none";
   }
 }
 
 // 齿轮悬停滑出/滑回（仅隐藏模式生效）
 $gearTab.addEventListener("mouseenter", () => {
+  if (!uiConfig.hideGear) return;
   $gear.style.transform = "translateX(0)";
   $gear.style.opacity = "1";
 });
 $gearWrap.addEventListener("mouseleave", () => {
   if (uiConfig.hideGear) {
-    $gear.style.transform = "translateX(140%)";
+    $gear.style.transform = "translateX(150%)";
     $gear.style.opacity = "0.35";
   }
 });
@@ -194,7 +196,18 @@ function deactivate() {
   closeEngineList();
   $input.value = "";
   if (document.activeElement === $input) $input.blur();
+  $focusAnchor.focus(); // 焦点归锚（普通页焦点源）
 }
+
+// 焦点锚：打字落入锚 → 转发到搜索框并唤醒
+$focusAnchor.addEventListener("input", () => {
+  const val = $focusAnchor.value;
+  $focusAnchor.value = "";
+  if (!val) return;
+  activate();
+  $input.value = val;
+  $input.dispatchEvent(new Event("input", { bubbles: true }));
+});
 
 // ---------- 建议 ----------
 
@@ -294,6 +307,7 @@ document.addEventListener("keydown", (e) => {
       $panel.classList.add("hidden");
       closeEngineList();
       $input.blur();
+      $focusAnchor.focus(); // 焦点归锚
     }
     return;
   }
@@ -352,8 +366,9 @@ window.addEventListener("message", (e) => {
   if (e.data === "tap:settings-close") {
     closeSettings();
   } else if (e.data === "tap:settings-changed") {
-    // 配置变更：仅刷新 UI 显隐（不动轮播/壁纸状态）
-    loadUiConfig().then((ui) => {
+    // 配置变更：刷新主题 + UI 显隐（不动轮播/壁纸状态）
+    Promise.all([loadUiConfig(), chrome.storage.local.get("theme")]).then(([ui, th]) => {
+      document.documentElement.dataset.theme = th.theme || "system";
       uiConfig = ui;
       applySearchBoxMode(uiConfig);
       applyGearMode(uiConfig);

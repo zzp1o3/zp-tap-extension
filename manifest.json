@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Tap 新标签页",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "极简新标签页：国内常用搜索引擎切换、书签与历史的智能直达、自定义轮播壁纸。",
   "default_locale": "zh_CN",
   "chrome_url_overrides": {
-    "newtab": "src/newtab/index.html"
+    "newtab": "src/newtab/launch.html"
   },
   "permissions": [
     "history",
@@ -21,7 +21,8 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Tap 新标签页"
+    "default_title": "Tap 新标签页",
+    "default_popup": ""
   },
   "background": {
     "service_worker": "src/background/sw.js"

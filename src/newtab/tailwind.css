@@ -201,6 +201,9 @@
   .top-1 {
     top: var(--spacing);
   }
+  .top-3 {
+    top: calc(var(--spacing) * 3);
+  }
   .top-4 {
     top: calc(var(--spacing) * 4);
   }
@@ -263,9 +266,6 @@
   }
   .mb-4 {
     margin-bottom: calc(var(--spacing) * 4);
-  }
-  .-ml-1\.5 {
-    margin-left: calc(var(--spacing) * -1.5);
   }
   .block {
     display: block;
@@ -896,6 +896,18 @@ body {
 }
 #settings-overlay {
   transition: background-color 0.4s ease;
+}
+#search-box.search-faded {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+#search-box.search-faded #engine-name, #search-box.search-faded #q {
+  opacity: 0.45;
+}
+#search-box:focus-within.search-faded, #search-box:not(.search-faded) {
+  background: var(--tap-glass);
+  border-color: var(--tp-line2);
 }
 [hidden] {
   display: none !important;

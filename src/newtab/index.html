@@ -5,8 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>新标签页</title>
   <link rel="stylesheet" href="tailwind.css" />
+  <!-- 早期聚焦：普通同步脚本，抢在 Chrome 抢占地址栏焦点之前 -->
+  <script src="focus-init.js"></script>
 </head>
 <body data-state="idle">
+  <!-- 焦点锚：普通扩展页导航时浏览器不抢地址栏，autofocus 让焦点落在这，打字即唤醒 -->
+  <input id="focus-anchor" type="text" autofocus autocomplete="off"
+         style="position:fixed;top:-100px;left:-100px;width:1px;height:1px;opacity:0;pointer-events:none"
+         tabindex="-1" />
+
   <div id="wallpaper"></div>
   <video id="video-bg" class="hidden fixed inset-0 w-full h-full object-cover z-0 pointer-events-none" muted loop playsinline autoplay preload="auto"></video>
   <div id="wallpaper-shade"></div>
@@ -29,12 +36,12 @@
   <div id="suggestions" class="tap-fade-in hidden fixed top-[calc(18vh+60px)] left-1/2 -translate-x-1/2 w-[min(640px,88vw)] max-h-[60vh] overflow-y-auto p-1.5 rounded-2xl border border-[var(--tp-line)] bg-[var(--tp-glass)] backdrop-blur-md shadow-[0_12px_36px_rgba(0,0,0,0.4)] z-9"></div>
 
   <!-- 设置齿轮：可隐藏，隐藏时贴边留小箭头，悬停滑出齿轮 -->
-  <div id="gear-wrap" class="fixed top-4 right-0 z-30 flex items-center">
-    <!-- 贴边触发箭头（齿轮滑出时也保留触区） -->
-    <div id="gear-tab" class="w-1.5 h-16 rounded-l-md transition-all duration-300 ease-in-out"></div>
-    <!-- 齿轮本体：藏起时 translate-x 移出屏幕 -->
+  <div id="gear-wrap" class="fixed top-4 right-0 z-30">
+    <!-- 贴边触发箭头（始终可见，齿轮常驻时也不影响） -->
+    <div id="gear-tab" class="w-1.5 h-16 rounded-l-md cursor-pointer bg-[var(--tp-gear)] transition-all duration-300 ease-in-out" title="设置"></div>
+    <!-- 齿轮本体：藏起时 translate-x 移出屏幕，absolute 不占文档流 -->
     <button id="gear" type="button" title="设置" aria-label="设置"
-            class="w-10 h-10 rounded-full flex items-center justify-center text-[var(--tp-tx)] bg-[var(--tp-gear)] opacity-35 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)] hover:text-[var(--tp-tx)] hover:opacity-100 -ml-1.5">
+            class="absolute top-3 right-1 w-10 h-10 rounded-full flex items-center justify-center text-[var(--tp-tx)] bg-[var(--tp-gear)] opacity-35 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)] hover:text-[var(--tp-tx)] hover:opacity-100">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         <circle cx="12" cy="12" r="3"/>
