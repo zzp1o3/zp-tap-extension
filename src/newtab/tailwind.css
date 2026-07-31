@@ -607,6 +607,9 @@
       color: color-mix(in oklab, var(--color-white) 95%, transparent);
     }
   }
+  .uppercase {
+    text-transform: uppercase;
+  }
   .opacity-35 {
     opacity: 35%;
   }
@@ -621,10 +624,6 @@
   .shadow-\[0_12px_36px_rgba\(0\,0\,0\,0\.4\)\] {
     --tw-shadow: 0 12px 36px var(--tw-shadow-color, rgba(0,0,0,0.4));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-  .outline {
-    outline-style: var(--tw-outline-style);
-    outline-width: 1px;
   }
   .backdrop-blur-md {
     --tw-backdrop-blur: blur(var(--blur-md));
@@ -782,16 +781,16 @@ html, body {
   }
 }
 .tap-drop-in {
-  animation: tap-drop-in 220ms ease-out;
+  animation: tap-drop-in 240ms ease-out;
 }
 @keyframes tap-drop-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
 @property --tw-translate-x {
@@ -888,11 +887,6 @@ html, body {
   inherits: false;
   initial-value: 0 0 #0000;
 }
-@property --tw-outline-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
-}
 @property --tw-backdrop-blur {
   syntax: "*";
   inherits: false;
@@ -975,7 +969,6 @@ html, body {
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
-      --tw-outline-style: solid;
       --tw-backdrop-blur: initial;
       --tw-backdrop-brightness: initial;
       --tw-backdrop-contrast: initial;

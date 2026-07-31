@@ -124,6 +124,16 @@ function chromeHistory(q) {
 
 // ---- UI 渲染 ----
 
+// favicon 加载失败时的首字母徽章
+function makeLetterBadge(it) {
+  let letter = "?";
+  try { letter = new URL(it.url).hostname.replace(/^www\./, "")[0] || "?"; } catch {}
+  const span = document.createElement("span");
+  span.className = "sug-icon " + ICON_CLASS + " flex items-center justify-center text-[12px] text-white/70 uppercase";
+  span.textContent = letter;
+  return span;
+}
+
 // 书签标记 SVG（lucide star）内联，颜色 currentColor
 const STAR_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
 
@@ -164,7 +174,10 @@ export function renderSuggestions(container, items, { onSelect, query }) {
     icon.src = getFaviconUrl(it.url);
     icon.alt = "";
     icon.loading = "lazy";
-    icon.onerror = () => { icon.style.visibility = "hidden"; };
+    // 加载失败时显示站点首字母占位，而非空白
+    icon.onerror = () => {
+      icon.replaceWith(makeLetterBadge(it));
+    };
 
     const text = document.createElement("div");
     text.className = "sug-text " + TEXT_CLASS;

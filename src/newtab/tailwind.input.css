@@ -47,11 +47,13 @@ html, body {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-/* 搜索框唤出淡入 */
+/* 搜索框唤出：在中心原位淡入并轻微上移。
+   注意只动 Y 不动 X —— 水平居中始终由 -translate-x-1/2（translate 属性）负责，
+   动画里若再写 translateX 会与 translate 属性叠加导致水平跳位。 */
 .tap-drop-in {
-  animation: tap-drop-in 220ms ease-out;
+  animation: tap-drop-in 240ms ease-out;
 }
 @keyframes tap-drop-in {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
