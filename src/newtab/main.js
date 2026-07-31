@@ -30,6 +30,8 @@ const $panel = document.getElementById("suggestions");
 const $engine = document.getElementById("engine-name");
 const $engineList = document.getElementById("engine-list");
 const $gear = document.getElementById("gear");
+const $gearWrap = document.getElementById("gear-wrap");
+const $gearTab = document.getElementById("gear-tab");
 // 背景层
 const $wallpaper = document.getElementById("wallpaper");
 const $settingsFrame = document.getElementById("settings-frame");
@@ -58,6 +60,58 @@ function closeSettings() {
   setTimeout(() => { if (!settingsOpen) $settingsFrame.src = ""; }, 320);
   $settingsDrawer.classList.add("pointer-events-none");
 }
+
+// ---------- UI 配置（搜索框/齿轮显隐） ----------
+
+const UI_KEY = "ui.config";
+const DEFAULT_UI = { hideSearchBox: false, hideGear: false };
+
+async function loadUiConfig() {
+  const got = await chrome.storage.local.get(UI_KEY);
+  return { ...DEFAULT_UI, ...(got[UI_KEY] || {}) };
+}
+
+// 应用搜索框显隐：
+//   hideSearchBox=false → 常驻显示（建议仍输入才出）
+//   hideSearchBox=true  → 隐藏，输入才唤出（现状）
+function applySearchBoxMode(ui) {
+  if (ui.hideSearchBox) {
+    deactivate();
+  } else {
+    document.body.dataset.state = "active";
+    $box.classList.remove("hidden");
+  }
+}
+
+// 应用齿轮显隐：
+//   hideGear=false → 齿轮常驻（半透明）
+//   hideGear=true  → 齿轮藏在右侧，贴边留触发箭头，悬停滑出
+function applyGearMode(ui) {
+  if (ui.hideGear) {
+    $gearWrap.classList.add("hidden");
+    // 齿轮藏起：translate-x 移出屏幕，箭头可见
+    $gear.style.transform = "translateX(140%)";
+    $gear.style.opacity = "0.35";
+    $gearTab.classList.remove("hidden");
+  } else {
+    $gear.style.transform = "";
+    $gear.style.opacity = "";
+    $gearTab.classList.add("hidden");
+    $gearWrap.classList.remove("hidden");
+  }
+}
+
+// 齿轮悬停滑出/滑回（仅隐藏模式生效）
+$gearTab.addEventListener("mouseenter", () => {
+  $gear.style.transform = "translateX(0)";
+  $gear.style.opacity = "1";
+});
+$gearWrap.addEventListener("mouseleave", () => {
+  if (uiConfig.hideGear) {
+    $gear.style.transform = "translateX(140%)";
+    $gear.style.opacity = "0.35";
+  }
+});
 
 // ---------- 引擎 ----------
 
@@ -231,9 +285,16 @@ function submitQuery() {
 // ---------- 键盘 ----------
 
 document.addEventListener("keydown", (e) => {
-  // Esc 任何时候 → 回 idle
+  // Esc：常驻模式清空输入隐藏建议；隐藏模式回 idle
   if (e.key === "Escape") {
-    deactivate();
+    if (uiConfig.hideSearchBox) {
+      deactivate();
+    } else {
+      $input.value = "";
+      $panel.classList.add("hidden");
+      closeEngineList();
+      $input.blur();
+    }
     return;
   }
   // Ctrl+↑/↓ 切换快捷组（仅 active 态）
@@ -291,7 +352,10 @@ window.addEventListener("message", (e) => {
   if (e.data === "tap:settings-close") {
     closeSettings();
   } else if (e.data === "tap:settings-changed") {
-    init(); // 配置变更后重新加载
+    // 配置变更：仅刷新 UI 显隐（不动轮播/壁纸状态）
+    uiConfig = await loadUiConfig();
+    applySearchBoxMode(uiConfig);
+    applyGearMode(uiConfig);
   }
 });
 
@@ -391,10 +455,17 @@ function fixedItems(all) {
   return all.filter((w) => w.fixed === true);
 }
 
+let uiConfig = DEFAULT_UI;
+
 async function init() {
   // 主题
   const th = await chrome.storage.local.get("theme");
   document.documentElement.dataset.theme = th.theme || "system";
+
+  // UI 显隐配置
+  uiConfig = await loadUiConfig();
+  applySearchBoxMode(uiConfig);
+  applyGearMode(uiConfig);
 
   cfg = await loadConfig();
   wpCfg = await loadWallpaperConfig();

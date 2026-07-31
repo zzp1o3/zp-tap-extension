@@ -21,6 +21,24 @@
       </div>
     </section>
 
+    <!-- 界面 -->
+    <section class="bg-[var(--tp-card)] border border-[var(--tp-line)] rounded-2xl p-4">
+      <h2 class="text-[15px] mb-3 flex items-center gap-2" style="color:var(--tp-tx)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-80" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        界面
+      </h2>
+      <label class="flex items-center justify-between gap-3 py-1.5 cursor-pointer">
+        <span class="text-[13px]" style="color:var(--tp-tx-2)">隐藏搜索框（输入时才显示）</span>
+        <input id="ui-hide-search" type="checkbox"
+               class="w-4 h-4 accent-[var(--tp-tx)]" />
+      </label>
+      <label class="flex items-center justify-between gap-3 py-1.5 cursor-pointer">
+        <span class="text-[13px]" style="color:var(--tp-tx-2)">隐藏设置按钮（悬停右上角显示）</span>
+        <input id="ui-hide-gear" type="checkbox"
+               class="w-4 h-4 accent-[var(--tp-tx)]" />
+      </label>
+    </section>
+
     <!-- 搜索引擎 -->
     <section class="bg-[var(--tp-card)] border border-[var(--tp-line)] rounded-2xl p-4">
       <h2 class="text-[15px] mb-2 flex items-center gap-2" style="color:var(--tp-tx)">

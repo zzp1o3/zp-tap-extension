@@ -17,6 +17,17 @@ const $add = document.getElementById("add-engine");
 const $newName = document.getElementById("new-name");
 const $newUrl = document.getElementById("new-url");
 const $wpFile = document.getElementById("wp-file");
+const $uiHideSearch = document.getElementById("ui-hide-search");
+const $uiHideGear = document.getElementById("ui-hide-gear");
+
+// 界面开关
+async function saveUi(patch) {
+  const cur = (await chrome.storage.local.get("ui.config"))["ui.config"] || {};
+  await chrome.storage.local.set({ "ui.config": { ...cur, ...patch } });
+  notifyChanged(); // 父页立即应用
+}
+$uiHideSearch.addEventListener("change", () => saveUi({ hideSearchBox: $uiHideSearch.checked }));
+$uiHideGear.addEventListener("change", () => saveUi({ hideGear: $uiHideGear.checked }));
 const $wpGrid = document.getElementById("wp-grid");
 const $wpMode = document.getElementById("wp-mode");
 const $wpInterval = document.getElementById("wp-interval");
@@ -410,6 +421,11 @@ async function init() {
     b.style.background = b.dataset.theme === th ? "var(--tp-select)" : "transparent";
     b.style.color = b.dataset.theme === th ? "var(--tp-tx)" : "var(--tp-tx-dim)";
   });
+
+  // UI 显隐开关
+  const ui = (await chrome.storage.local.get("ui.config"))["ui.config"] || {};
+  $uiHideSearch.checked = !!ui.hideSearchBox;
+  $uiHideGear.checked = !!ui.hideGear;
 
   cfg = await loadConfig();
   wpCfg = await loadWallpaperConfig();
