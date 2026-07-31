@@ -14,7 +14,7 @@ import {
 import {
   loadWallpaperConfig, listWallpapers, saveWallpaperConfig,
 } from "./storage.js";
-import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain, HISTORY_PER_DOMAIN } from "./suggestions.js";
+import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain } from "./suggestions.js";
 import { isDirectUrl, toDirectUrl } from "./url-detect.js";
 
 let cfg = null;
@@ -187,7 +187,7 @@ async function buildEmptySuggestions() {
       chrome.history.search({ text: "", maxResults: 200, startTime }, (res) => r(Array.isArray(res) ? res : []))
     );
   } catch {}
-  const folded = foldHistoryByDomain(hist, HISTORY_PER_DOMAIN);
+  const folded = foldHistoryByDomain(hist);
   const out = [];
   // 书签 4 + 历史 4
   for (const b of bms.slice(0, 4)) {

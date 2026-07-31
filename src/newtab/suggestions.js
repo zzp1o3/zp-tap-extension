@@ -11,7 +11,6 @@
 
 import { getFaviconUrl } from "./favicon.js";
 
-export const HISTORY_PER_DOMAIN = 2;
 export const MAX_SUGGESTIONS = 8;
 
 const BOOKMARK_WEIGHT = 1.6;
@@ -43,25 +42,19 @@ function domainOf(url) {
   }
 }
 
-// 折叠历史：同域名按 lastVisitTime 取最近 N 条，并保留域名最近访问顺序
-export function foldHistoryByDomain(historyItems, perDomain = HISTORY_PER_DOMAIN) {
+// 折叠历史：同域名只取 visitCount 最高的那一条，按域名最近访问排序
+export function foldHistoryByDomain(historyItems) {
   const byDomain = new Map();
   for (const it of historyItems) {
     const d = domainOf(it.url);
     if (!d) continue;
-    if (!byDomain.has(d)) byDomain.set(d, []);
-    byDomain.get(d).push(it);
+    if (!byDomain.has(d)) { byDomain.set(d, it); continue; }
+    const cur = byDomain.get(d);
+    if ((it.visitCount || 0) > (cur.visitCount || 0)) byDomain.set(d, it);
   }
-  const domainLast = [];
-  for (const [d, items] of byDomain) {
-    items.sort((a, b) => (b.lastVisitTime || 0) - (a.lastVisitTime || 0));
-    const top = items.slice(0, perDomain);
-    domainLast.push({ domain: d, last: top[0].lastVisitTime || 0, items: top });
-  }
-  domainLast.sort((a, b) => b.last - a.last);
-  const out = [];
-  for (const g of domainLast) out.push(...g.items);
-  return out;
+  const result = Array.from(byDomain.values());
+  result.sort((a, b) => (b.lastVisitTime || 0) - (a.lastVisitTime || 0));
+  return result;
 }
 
 // 取 bookmark + history，混排打分，返回 ≤ MAX_SUGGESTIONS 条
@@ -72,7 +65,7 @@ export async function buildSuggestions(query, refDate = Date.now()) {
     chromeBookmarks(q),
     chromeHistory(q),
   ]);
-  const folded = foldHistoryByDomain(hist, HISTORY_PER_DOMAIN);
+  const folded = foldHistoryByDomain(hist);
   const scored = [];
   for (const b of folded) {
     scored.push({

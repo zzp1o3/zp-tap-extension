@@ -126,11 +126,12 @@ export async function probeVideo(file) {
   }
 }
 
-// 抓取视频首帧为 JPEG poster（Blob）。用于本地视频缩略图预览。
-export async function captureVideoPoster(file) {
-  const url = URL.createObjectURL(file);
+// 抓取视频首帧为 JPEG poster（Blob）。接受 File 或 URL 字符串。
+export async function captureVideoPoster(src) {
+  const isUrl = typeof src === "string";
+  const url = isUrl ? src : URL.createObjectURL(src);
   try {
-    const poster = await new Promise((resolve, reject) => {
+    const poster = await new Promise((resolve) => {
       const v = document.createElement("video");
       v.preload = "auto";
       v.muted = true;
@@ -151,12 +152,14 @@ export async function captureVideoPoster(file) {
         canvas.toBlob((b) => resolve(b || undefined), "image/jpeg", 0.7);
       };
       v.onerror = () => resolve(undefined);
+      // 超时 8s 放弃
+      setTimeout(() => resolve(undefined), 8000);
     });
     return poster;
   } catch {
     return undefined;
   } finally {
-    URL.revokeObjectURL(url);
+    if (!isUrl) URL.revokeObjectURL(url);
   }
 }
 

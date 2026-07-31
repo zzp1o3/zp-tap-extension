@@ -193,14 +193,13 @@ async function renderWallpapers() {
 
     // 轮播勾选框
     const cb = document.createElement("button");
-    cb.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border";
-    cb.style.color = "var(--tp-tx)";
+    cb.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border border-white/20";
     if (w.carousel !== false) {
-      cb.style.background = "var(--tp-glass2)";
-      cb.style.borderColor = "transparent";
+      cb.style.background = "#fff";
+      cb.style.color = "#000";
     } else {
-      cb.style.background = "transparent";
-      cb.style.borderColor = "var(--tp-line)";
+      cb.style.background = "rgba(0,0,0,0.7)";
+      cb.style.color = "#fff";
     }
     cb.innerHTML = (w.carousel !== false ? CHECK_SVG : "") + " 轮播";
     cb.title = "参与轮播";
@@ -215,14 +214,13 @@ async function renderWallpapers() {
 
     // 固定勾选框
     const fb = document.createElement("button");
-    fb.className = "absolute bottom-1 left-[70px] px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border";
-    fb.style.color = "var(--tp-tx)";
+    fb.className = "absolute bottom-1 left-[70px] px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border border-white/20";
     if (w.fixed) {
-      fb.style.background = "var(--tp-glass2)";
-      fb.style.borderColor = "transparent";
+      fb.style.background = "#fff";
+      fb.style.color = "#000";
     } else {
-      fb.style.background = "transparent";
-      fb.style.borderColor = "var(--tp-line)";
+      fb.style.background = "rgba(0,0,0,0.7)";
+      fb.style.color = "#fff";
     }
     fb.innerHTML = (w.fixed ? CHECK_SVG : "") + " 固定";
     fb.title = "固定背景（固定模式下显示此项；只能固定一个）";
@@ -313,13 +311,15 @@ $videoFile.addEventListener("change", async () => {
   notifyChanged();
 });
 
-// 添加远程 URL（类型由下拉框显式指定，不用正则猜）
+// 添加远程 URL（类型由下拉框显式指定）
 $addUrl.addEventListener("click", async () => {
   const u = $mediaUrl.value.trim();
   if (!u) return;
   const type = $urlType.value === "video" ? "video" : "image";
+  let poster;
+  if (type === "video") poster = await captureVideoPoster(u).catch(() => undefined);
   const id = "url-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
-  await putWallpaper({ id, name: decode(u), type, url: u, createdAt: Date.now() });
+  await putWallpaper({ id, name: decode(u), type, url: u, poster, createdAt: Date.now() });
   $mediaUrl.value = "";
   wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);
   renderWallpapers();
