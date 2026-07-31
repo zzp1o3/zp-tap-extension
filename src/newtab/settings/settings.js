@@ -3,7 +3,7 @@
 
 import { loadConfig, saveConfig } from "../engines.js";
 import {
-  listWallpapers, putWallpaper, delWallpaper, compressImage, probeVideo,
+  listWallpapers, putWallpaper, delWallpaper, compressImage, probeVideo, captureVideoPoster,
   loadWallpaperConfig, saveWallpaperConfig,
 } from "../storage.js";
 
@@ -165,8 +165,20 @@ async function renderWallpapers() {
         card.appendChild(makePlayOverlay(w));
       };
       card.appendChild(img);
+    } else if (w.poster) {
+      // 视频有 poster 缩略图：显示图片 + 播放三角
+      const img = document.createElement("img");
+      const u = URL.createObjectURL(w.poster);
+      thumbUrls.add(u);
+      img.src = u; img.alt = w.name;
+      img.className = "w-full h-full object-cover block";
+      card.appendChild(img);
+      const play = document.createElement("div");
+      play.className = "pointer-events-none absolute inset-0 flex items-center justify-center";
+      play.innerHTML = PLAY_SVG;
+      card.appendChild(play);
     } else {
-      // 视频：播放图标叠加
+      // 视频无 poster：播放图标叠加
       card.appendChild(makePlayOverlay(w));
     }
     if (w.type === "video") {
@@ -193,6 +205,22 @@ async function renderWallpapers() {
       notifyChanged();
     });
     card.appendChild(cb);
+
+    // 固定勾选框
+    const fb = document.createElement("button");
+    fb.className = "absolute bottom-1 left-[70px] px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5";
+    fb.style.background = w.fixed ? "var(--tp-glass2)" : "var(--tp-badge)";
+    fb.style.color = "var(--tp-tx)";
+    fb.innerHTML = (w.fixed ? CHECK_SVG : "") + " 固定";
+    fb.title = "固定背景（固定模式下显示此项）";
+    fb.addEventListener("click", async (ev) => {
+      ev.stopPropagation();
+      w.fixed = !w.fixed;
+      await putWallpaper(w);
+      renderWallpapers();
+      notifyChanged();
+    });
+    card.appendChild(fb);
 
     // 删除
     const btn = document.createElement("button");
@@ -253,13 +281,16 @@ $wpFile.addEventListener("change", async () => {
   notifyChanged();
 });
 
-// 上传视频（不压缩，原样存，IDB 配额够）
+// 上传视频（不压缩，原样存。首帧异步抓取为 poster 缩略图）
 $videoFile.addEventListener("change", async () => {
   const files = Array.from($videoFile.files || []);
   for (const f of files) {
-    const meta = await probeVideo(f).catch(() => ({ width: 0, height: 0 }));
+    const [meta, poster] = await Promise.all([
+      probeVideo(f).catch(() => ({ width: 0, height: 0 })),
+      captureVideoPoster(f).catch(() => undefined),
+    ]);
     const id = "video-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
-    await putWallpaper({ id, name: f.name, type: "video", blob: f, width: meta.width, height: meta.height, createdAt: Date.now() });
+    await putWallpaper({ id, name: f.name, type: "video", blob: f, poster, width: meta.width, height: meta.height, createdAt: Date.now() });
   }
   $videoFile.value = "";
   wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);

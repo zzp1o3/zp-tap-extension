@@ -318,8 +318,12 @@ function hideImage() {
 // interval 模式定时在 startInterval 内递增。
 function pickMedia() {
   if (wallpapers.length === 0) return null;
+  if (wpCfg.mode === "fixed") {
+    const items = fixedItems(wallpapers);
+    return items.length > 0 ? items[0] : wallpapers[0];
+  }
   const items = carouselItems(wallpapers);
-  const pool = items.length > 0 ? items : wallpapers; // 全部未勾选时兜底全量
+  const pool = items.length > 0 ? items : wallpapers;
   const idx = ((wpCfg.currentIndex ?? 0) + pool.length) % pool.length;
   return pool[idx];
 }
@@ -339,7 +343,9 @@ async function renderMedia() {
     $videoBg.classList.remove("hidden");
     const src = item.blob ? URL.createObjectURL(item.blob) : (item.url || "");
     $videoBg.src = src;
-    $videoBg.play().catch(() => {});
+    // autoplay 属性 + 手动 play() 双保险
+    $videoBg.load();
+    setTimeout(() => $videoBg.play().catch(() => {}), 50);
   } else {
     // 图片模式：恢复 wallpaper 层，隐藏视频
     $wallpaper.style.display = "";
@@ -374,9 +380,12 @@ function stopInterval() {
 
 // ---------- 初始化 ----------
 
-// 取参与轮播的媒体项。无 carousel 字段默认 true。
+// 取参与轮播/固定的媒体项
 function carouselItems(all) {
   return all.filter((w) => w.carousel !== false);
+}
+function fixedItems(all) {
+  return all.filter((w) => w.fixed === true);
 }
 
 async function init() {

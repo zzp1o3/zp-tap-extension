@@ -122,7 +122,40 @@ export async function probeVideo(file) {
     });
     return meta;
   } finally {
-    // 元数据已读，可释放（实际播放另起 ObjectURL）
+    URL.revokeObjectURL(url);
+  }
+}
+
+// 抓取视频首帧为 JPEG poster（Blob）。用于本地视频缩略图预览。
+export async function captureVideoPoster(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const poster = await new Promise((resolve, reject) => {
+      const v = document.createElement("video");
+      v.preload = "auto";
+      v.muted = true;
+      v.crossOrigin = "anonymous";
+      v.src = url;
+      v.onloadeddata = () => {
+        const t = v.duration ? Math.min(v.duration * 0.1, 2) : 0.5;
+        v.currentTime = t;
+      };
+      v.onseeked = () => {
+        const w = v.videoWidth || 320;
+        const h = v.videoHeight || 180;
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        try { ctx.drawImage(v, 0, 0, w, h); } catch {}
+        canvas.toBlob((b) => resolve(b || undefined), "image/jpeg", 0.7);
+      };
+      v.onerror = () => resolve(undefined);
+    });
+    return poster;
+  } catch {
+    return undefined;
+  } finally {
     URL.revokeObjectURL(url);
   }
 }

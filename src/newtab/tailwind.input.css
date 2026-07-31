@@ -9,9 +9,9 @@
 body[data-theme="dark"] {
   --tap-glass:   rgba(255, 255, 255, 0.10);
   --tap-glass-2: rgba(255, 255, 255, 0.15);
-  --tap-card:    rgba(255, 255, 255, 0.04);
-  --tap-page:    #0f1013;
-  --tap-wall:    #1a2233;
+  --tap-card:    rgba(255, 255, 255, 0.06);
+  --tap-page:    #000000;
+  --tap-wall:    #000000;
   --tap-input:   #14161b;
   --tap-upload:  rgba(255, 255, 255, 0.03);
   --tap-tx:      #ffffff;
@@ -25,11 +25,11 @@ body[data-theme="dark"] {
   --tap-select:  rgba(255, 255, 255, 0.14);
   --tap-hover:   rgba(255, 255, 255, 0.10);
   --tap-shade:   rgba(0, 0, 0, 0.25);
-  --tap-overlay: rgba(0, 0, 0, 0.40);
-  --tap-gear:    rgba(0, 0, 0, 0.25);
+  --tap-overlay: rgba(0, 0, 0, 0.45);
+  --tap-gear:    rgba(0, 0, 0, 0.30);
   --tap-trash:   rgba(0, 0, 0, 0.55);
   --tap-badge:   rgba(0, 0, 0, 0.55);
-  --tap-drawer:  rgba(15, 16, 19, 0.95);
+  --tap-drawer:  rgba(10, 11, 13, 0.96);
   color-scheme: dark;
 }
 
@@ -37,26 +37,26 @@ body[data-theme="light"] {
   --tap-glass:   rgba(0, 0, 0, 0.05);
   --tap-glass-2: rgba(0, 0, 0, 0.08);
   --tap-card:    rgba(0, 0, 0, 0.03);
-  --tap-page:    #f0f2f5;
-  --tap-wall:    #d8dde3;
-  --tap-input:   #ffffff;
+  --tap-page:    #ffffff;
+  --tap-wall:    #ffffff;
+  --tap-input:   #f5f5f5;
   --tap-upload:  rgba(0, 0, 0, 0.02);
-  --tap-tx:      #1a1c22;
+  --tap-tx:      #000000;
   --tap-tx-dim:  rgba(0, 0, 0, 0.45);
   --tap-tx-70:   rgba(0, 0, 0, 0.60);
-  --tap-tx-90:   rgba(0, 0, 0, 0.82);
-  --tap-tx-95:   rgba(0, 0, 0, 0.90);
-  --tap-line:    rgba(0, 0, 0, 0.08);
-  --tap-line-2:  rgba(0, 0, 0, 0.12);
+  --tap-tx-90:   rgba(0, 0, 0, 0.85);
+  --tap-tx-95:   rgba(0, 0, 0, 0.95);
+  --tap-line:    rgba(0, 0, 0, 0.10);
+  --tap-line-2:  rgba(0, 0, 0, 0.15);
   --tap-line-15: rgba(0, 0, 0, 0.10);
   --tap-select:  rgba(0, 0, 0, 0.06);
   --tap-hover:   rgba(0, 0, 0, 0.05);
   --tap-shade:   transparent;
-  --tap-overlay: rgba(255, 255, 255, 0.15);
-  --tap-gear:    rgba(255, 255, 255, 0.20);
+  --tap-overlay: rgba(255, 255, 255, 0.20);
+  --tap-gear:    rgba(255, 255, 255, 0.25);
   --tap-trash:   rgba(0, 0, 0, 0.35);
-  --tap-badge:   rgba(0, 0, 0, 0.35);
-  --tap-drawer:  rgba(240, 242, 245, 0.95);
+  --tap-badge:   rgba(0, 0, 0, 0.15);
+  --tap-drawer:  rgba(255, 255, 255, 0.96);
   color-scheme: light;
 }
 
@@ -66,26 +66,26 @@ body[data-theme="light"] {
     --tap-glass:   rgba(0, 0, 0, 0.05);
     --tap-glass-2: rgba(0, 0, 0, 0.08);
     --tap-card:    rgba(0, 0, 0, 0.03);
-    --tap-page:    #f0f2f5;
-    --tap-wall:    #d8dde3;
-    --tap-input:   #ffffff;
+    --tap-page:    #ffffff;
+    --tap-wall:    #ffffff;
+    --tap-input:   #f5f5f5;
     --tap-upload:  rgba(0, 0, 0, 0.02);
-    --tap-tx:      #1a1c22;
+    --tap-tx:      #000000;
     --tap-tx-dim:  rgba(0, 0, 0, 0.45);
     --tap-tx-70:   rgba(0, 0, 0, 0.60);
-    --tap-tx-90:   rgba(0, 0, 0, 0.82);
-    --tap-tx-95:   rgba(0, 0, 0, 0.90);
-    --tap-line:    rgba(0, 0, 0, 0.08);
-    --tap-line-2:  rgba(0, 0, 0, 0.12);
+    --tap-tx-90:   rgba(0, 0, 0, 0.85);
+    --tap-tx-95:   rgba(0, 0, 0, 0.95);
+    --tap-line:    rgba(0, 0, 0, 0.10);
+    --tap-line-2:  rgba(0, 0, 0, 0.15);
     --tap-line-15: rgba(0, 0, 0, 0.10);
     --tap-select:  rgba(0, 0, 0, 0.06);
     --tap-hover:   rgba(0, 0, 0, 0.05);
     --tap-shade:   transparent;
-    --tap-overlay: rgba(255, 255, 255, 0.15);
-    --tap-gear:    rgba(255, 255, 255, 0.20);
+    --tap-overlay: rgba(255, 255, 255, 0.20);
+    --tap-gear:    rgba(255, 255, 255, 0.25);
     --tap-trash:   rgba(0, 0, 0, 0.35);
-    --tap-badge:   rgba(0, 0, 0, 0.35);
-    --tap-drawer:  rgba(240, 242, 245, 0.95);
+    --tap-badge:   rgba(0, 0, 0, 0.15);
+    --tap-drawer:  rgba(255, 255, 255, 0.96);
     color-scheme: light;
   }
 }
