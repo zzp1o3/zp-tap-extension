@@ -72,11 +72,15 @@ function renderEngines() {
     li.querySelector(".url").textContent = e.url;
     li.querySelector(".del").addEventListener("click", (ev) => {
       ev.stopPropagation();
-      if (e.builtin) { toast("内置引擎不可删除"); return; }
-      if (cfg.engines.length <= 1) { toast("至少保留一个搜索引擎"); return; }
       const idx = cfg.engines.findIndex((x) => x.id === e.id);
       if (idx >= 0) {
         cfg.engines.splice(idx, 1);
+        // 删光时自动回退 bing 引擎
+        if (cfg.engines.length === 0) {
+          const bing = { id: "bing", name: "必应", url: "https://cn.bing.com/search?q={q}" };
+          cfg.engines.push(bing);
+          toast("已保留默认必应引擎");
+        }
         if (cfg.defaultId === e.id) cfg.defaultId = cfg.engines[0]?.id;
         saveConfig(cfg);
         renderEngines();
@@ -142,7 +146,7 @@ $add.addEventListener("click", () => {
   if (!name || !url) { alert("请填写名称与 URL 模板。"); return; }
   if (!url.includes("{q}")) { alert("URL 模板需包含 {q} 占位以接收查询词。"); return; }
   const id = "custom-" + name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now();
-  cfg.engines.push({ id, name, url, builtin: false });
+  cfg.engines.push({ id, name, url });
   // 不强制设为默认：新增引擎排在末尾，是否进快捷组由用户排序决定。
   saveConfig(cfg);
   $newName.value = ""; $newUrl.value = "";
