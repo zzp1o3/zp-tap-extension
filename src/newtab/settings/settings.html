@@ -29,16 +29,30 @@
     <section class="bg-white/[0.04] border border-white/10 rounded-2xl p-4">
       <h2 class="text-[15px] mb-2 flex items-center gap-2">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-80" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 21"/></svg>
-        壁纸
+        背景媒体
       </h2>
-      <p class="text-[12px] text-white/55 mb-3 leading-relaxed">上传本地图片，自动压缩后存于本机；无外网依赖。</p>
-      <div class="mb-3">
-        <label class="flex items-center justify-center gap-2 px-3 py-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] text-[13px] text-white/70 transition-all duration-300 ease-in-out hover:scale-[1.02] hover:bg-white/10 cursor-pointer">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
-          点击选择图片（可多选）
+      <p class="text-[12px] text-white/55 mb-3 leading-relaxed">上传本地图片/视频，或填入远程 URL。支持同序列轮播。</p>
+      <!-- 上传区 -->
+      <div class="flex gap-2 mb-3 flex-wrap">
+        <label class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-dashed border-white/15 bg-white/[0.03] text-[13px] text-white/70 transition-all duration-300 ease-in-out hover:scale-[1.02] hover:bg-white/10 cursor-pointer shrink-0">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          图片
           <input id="wp-file" type="file" accept="image/*" multiple class="hidden" />
         </label>
+        <label class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-dashed border-white/15 bg-white/[0.03] text-[13px] text-white/70 transition-all duration-300 ease-in-out hover:scale-[1.02] hover:bg-white/10 cursor-pointer shrink-0">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          视频
+          <input id="video-file" type="file" accept="video/*" class="hidden" />
+        </label>
+        <div class="flex items-center gap-1.5 flex-1 min-w-[220px]">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/55 shrink-0" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <input id="media-url" type="text" placeholder="图片或视频 URL（含协议）"
+                 class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-[#14161b] border border-white/10 text-white text-[13px]" />
+          <button id="add-url" type="button"
+                  class="px-3 py-2 rounded-lg bg-white/10 text-white text-[13px] transition-all duration-300 ease-in-out hover:scale-105 hover:bg-white/20 shrink-0">添加</button>
+        </div>
       </div>
+      <!-- 媒体网格 -->
       <div id="wp-grid" class="grid gap-2 mb-4" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))"></div>
       <div class="flex gap-3 items-center flex-wrap text-[13px]">
         <label class="flex items-center gap-2">

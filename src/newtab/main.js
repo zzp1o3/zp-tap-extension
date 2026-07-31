@@ -12,7 +12,7 @@ import {
   loadConfig, saveConfig, buildSearchUrl, shortcutGroup,
 } from "./engines.js";
 import {
-  loadWallpaperConfig, listWallpapers, getWallpaper, saveWallpaperConfig,
+  loadWallpaperConfig, listWallpapers, saveWallpaperConfig,
 } from "./storage.js";
 import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain, HISTORY_PER_DOMAIN } from "./suggestions.js";
 
@@ -20,8 +20,8 @@ import { buildSuggestions, renderSuggestions, moveSelection, foldHistoryByDomain
 
 let cfg = null;
 let wpCfg = null;
-let wallpapers = []; // [{id,name,createdAt,width,height}]（不含 blob，按需取）
-let currentWpObjectUrl = null;
+let wallpapers = []; // 媒体项 [{id,name,type:"image"|"video",blob?,url?,createdAt,...}]，含 blob
+let currentWpObjectUrl = null; // 当前图片用的 ObjectURL（视频用 src 直连）
 let intervalTimer = null;
 let shortcutIndex = 0; // 快捷组内当前指针
 
@@ -31,6 +31,8 @@ const $panel = document.getElementById("suggestions");
 const $engine = document.getElementById("engine-name");
 const $engineList = document.getElementById("engine-list");
 const $gear = document.getElementById("gear");
+// 背景层
+const $wallpaper = document.getElementById("wallpaper");
 const $settingsFrame = document.getElementById("settings-frame");
 const $settingsDrawer = document.getElementById("settings-drawer");
 const $settingsOverlay = document.getElementById("settings-overlay");
@@ -295,41 +297,67 @@ window.addEventListener("message", (e) => {
   }
 });
 
-// ---------- 壁纸 ----------
+// ---------- 背景媒体（图片 / 视频 / URL）----------
 
-async function renderWallpaper() {
-  if (wallpapers.length === 0) {
-    document.body.style.removeProperty("--wp");
-    return;
-  }
-  let id = null;
-  if (wpCfg.mode === "per-open") {
-    id = wallpapers[0].id;
+const $videoBg = document.getElementById("video-bg");
+
+// 隐藏视频层，恢复图片层。图片无背景时显示默认玻璃色。
+function hideVideo() {
+  $videoBg.classList.add("hidden");
+  $videoBg.pause();
+  if ($videoBg.src && $videoBg.src.startsWith("blob:")) URL.revokeObjectURL($videoBg.src);
+  $videoBg.removeAttribute("src");
+}
+function hideImage() {
+  if (currentWpObjectUrl) { URL.revokeObjectURL(currentWpObjectUrl); currentWpObjectUrl = null; }
+  $wallpaper.style.removeProperty("background-image");
+}
+
+// 获取当前媒体索引。per-open 模式每打开新标签页进一位（在 init 里递增后调用）；
+// interval 模式定时在 startInterval 内递增。
+function pickMedia() {
+  if (wallpapers.length === 0) return null;
+  const idx = ((wpCfg.currentIndex ?? 0) + wallpapers.length) % wallpapers.length;
+  return wallpapers[idx];
+}
+
+async function renderMedia() {
+  hideVideo();
+  hideImage();
+  $wallpaper.style.display = ""; // 恢复壁纸层（上轮若是视频，display 为 none）
+  if (wallpapers.length === 0) return;
+
+  const item = pickMedia();
+  if (!item) return;
+
+  if (item.type === "video") {
+    // 视频模式：隐藏 wallpaper 层（否则背景色会挡在视频上），显示 video 层
+    $wallpaper.style.display = "none";
+    $videoBg.classList.remove("hidden");
+    const src = item.blob ? URL.createObjectURL(item.blob) : (item.url || "");
+    $videoBg.src = src;
+    $videoBg.play().catch(() => {});
   } else {
-    // interval 模式按 currentId；若记录已删则回退第一张并修正配置
-    id = wpCfg.currentId || wallpapers[0].id;
+    // 图片模式：恢复 wallpaper 层，隐藏视频
+    $wallpaper.style.display = "";
+    let src = "";
+    if (item.blob) {
+      currentWpObjectUrl = URL.createObjectURL(item.blob);
+      src = currentWpObjectUrl;
+    } else if (item.url) {
+      src = item.url;
+    }
+    if (src) $wallpaper.style.setProperty("--wp", `url("${src}")`);
   }
-  let rec = await getWallpaper(id);
-  if (!rec) {
-    id = wallpapers[0].id;
-    rec = await getWallpaper(id);
-    if (wpCfg.mode === "interval") saveWallpaperConfig({ currentId: id });
-  }
-  if (!rec) return;
-  if (currentWpObjectUrl) URL.revokeObjectURL(currentWpObjectUrl);
-  currentWpObjectUrl = URL.createObjectURL(rec.blob);
-  document.body.style.setProperty("--wp", `url("${currentWpObjectUrl}")`);
 }
 
 function startIntervalIfNeeded() {
   stopInterval();
   if (wpCfg.mode === "interval" && wallpapers.length > 1) {
     intervalTimer = setInterval(async () => {
-      const idx = wallpapers.findIndex((w) => w.id === (wpCfg.currentId || wallpapers[0].id));
-      const next = wallpapers[(idx + 1) % wallpapers.length];
-      wpCfg.currentId = next.id;
-      await saveWallpaperConfig({ currentId: next.id });
-      renderWallpaper();
+      wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % wallpapers.length;
+      await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
+      renderMedia();
     }, Math.max(5, wpCfg.intervalSec || 30) * 1000);
   }
 }
@@ -346,11 +374,14 @@ async function init() {
   const all = await listWallpapers();
   wallpapers = all.sort((a, b) => a.createdAt - b.createdAt);
   renderEngineName();
-  await renderWallpaper();
+
+  // per-open 模式：每次打开新标签页进到下一个媒体项
+  if (wpCfg.mode === "per-open" && wallpapers.length > 0) {
+    wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % wallpapers.length;
+    await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
+  }
+  await renderMedia();
   startIntervalIfNeeded();
 }
 
 init();
-
-// 暴露给设置面板用（同源 iframe 可访问 parent 的变量，但模块作用域不暴露到 window）
-// 这里通过 postMessage 通信，无需暴露。

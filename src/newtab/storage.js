@@ -1,11 +1,17 @@
-// 存储层：壁纸走 IndexedDB，其它配置走 chrome.storage.local。
+// 存储层：背景媒体（图片/视频）走 IndexedDB，其它配置走 chrome.storage.local。
 //
-// IndexedDB 名 "tap-newtab"，仓库 "wallpapers"，键为壁纸 id（时间戳串）。
-// 每条记录：{ id, name, blob, createdAt, width, height }
-//   存 Blob 可直接转 ObjectURL，省内存且类型友好。
+// IndexedDB 名 "tap-newtab"，仓库 "wallpapers"（保留旧名以兼容已有数据），键为 id（时间戳串）。
+// 每条记录（媒体项）：
+//   { id, name, type: "image" | "video", createdAt, blob?, url?, width?, height? }
+//   - blob：本地文件经压缩(图片)或直存(视频)后的 Blob。
+//   - url ：远程 URL（无 blob）。
+// 两者择一：本地有 blob，远程用 url。
 //
-// 轮播与轮播模式也属于配置，键 "wallpaper.config"：
-//   { mode: "per-open" | "interval", intervalSec: number, currentId: string|null }
+// 配置（chrome.storage.local，键 "wallpaper.config"，已迁移到 currentIndex 语义）：
+//   { mode: "per-open" | "interval", intervalSec: number,
+//     currentId: string|null,   // 旧字段，保留以兼容；优先用 currentIndex
+//     currentIndex: number      // per-open/interval 轮播的当前序列位置
+//   }
 
 const DB_NAME = "tap-newtab";
 const STORE = "wallpapers";
@@ -97,6 +103,30 @@ export async function compressImage(file, { maxEdge = 1920, maxSize = 2 * 1024 *
   };
 }
 
+// 读取本地视频元数据（resolution、duration），const 不压缩直接存。
+// 视频压缩成本高且质量损失大，故原样保存，由浏览器解码。
+export async function probeVideo(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const meta = await new Promise((resolve, reject) => {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.muted = true;
+      v.src = url;
+      v.onloadedmetadata = () => resolve({
+        width: v.videoWidth || 0,
+        height: v.videoHeight || 0,
+        duration: v.duration || 0,
+      });
+      v.onerror = () => reject(new Error("无法读取视频元数据"));
+    });
+    return meta;
+  } finally {
+    // 元数据已读，可释放（实际播放另起 ObjectURL）
+    URL.revokeObjectURL(url);
+  }
+}
+
 function canvasToBlob(canvas, type, quality) {
   return new Promise((resolve) => {
     canvas.toBlob(
@@ -107,9 +137,9 @@ function canvasToBlob(canvas, type, quality) {
   });
 }
 
-// ---- 壁纸配置（chrome.storage.local）----
+// ---- 配置（chrome.storage.local）----
 
-const DEFAULT_WPCFG = { mode: "per-open", intervalSec: 30, currentId: null };
+const DEFAULT_WPCFG = { mode: "per-open", intervalSec: 30, currentId: null, currentIndex: 0 };
 
 export async function loadWallpaperConfig() {
   const got = await chrome.storage.local.get(CFG_KEY);
