@@ -129,7 +129,9 @@ function makeLetterBadge(it) {
   let letter = "?";
   try { letter = new URL(it.url).hostname.replace(/^www\./, "")[0] || "?"; } catch {}
   const span = document.createElement("span");
-  span.className = "sug-icon " + ICON_CLASS + " flex items-center justify-center text-[12px] text-white/70 uppercase";
+  span.className = "sug-icon " + ICON_CLASS + " flex items-center justify-center text-[12px] uppercase";
+  span.style.color = "var(--tp-tx-dim)";
+  span.style.background = "var(--tp-select)";
   span.textContent = letter;
   return span;
 }

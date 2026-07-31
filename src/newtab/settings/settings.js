@@ -193,9 +193,15 @@ async function renderWallpapers() {
 
     // 轮播勾选框
     const cb = document.createElement("button");
-    cb.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5";
-    cb.style.background = w.carousel !== false ? "var(--tp-glass2)" : "var(--tp-badge)";
+    cb.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border";
     cb.style.color = "var(--tp-tx)";
+    if (w.carousel !== false) {
+      cb.style.background = "var(--tp-glass2)";
+      cb.style.borderColor = "transparent";
+    } else {
+      cb.style.background = "transparent";
+      cb.style.borderColor = "var(--tp-line)";
+    }
     cb.innerHTML = (w.carousel !== false ? CHECK_SVG : "") + " 轮播";
     cb.title = "参与轮播";
     cb.addEventListener("click", async (ev) => {
@@ -209,9 +215,15 @@ async function renderWallpapers() {
 
     // 固定勾选框
     const fb = document.createElement("button");
-    fb.className = "absolute bottom-1 left-[70px] px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5";
-    fb.style.background = w.fixed ? "var(--tp-glass2)" : "var(--tp-badge)";
+    fb.className = "absolute bottom-1 left-[70px] px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5 border";
     fb.style.color = "var(--tp-tx)";
+    if (w.fixed) {
+      fb.style.background = "var(--tp-glass2)";
+      fb.style.borderColor = "transparent";
+    } else {
+      fb.style.background = "transparent";
+      fb.style.borderColor = "var(--tp-line)";
+    }
     fb.innerHTML = (w.fixed ? CHECK_SVG : "") + " 固定";
     fb.title = "固定背景（固定模式下显示此项；只能固定一个）";
     fb.addEventListener("click", async (ev) => {
