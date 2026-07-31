@@ -1,10 +1,12 @@
 # zptap
 
+> 🌐 **[English](README_EN.md)** · 中文
+
 极简舒适的新标签页。打开即聚焦，打字即搜索，一键直达你收藏和常去的地方。
 
-|![img.png](img.png) | ![img_1.png](img_1.png)  | ![img_2.png](img_2.png)  |
-|---|---|---|
-|![img_3.png](img_3.png) |   |   |
+| ![img.png](img.png)     | ![img_1.png](img_1.png)  | ![img_2.png](img_2.png)  |
+|-------------------------|---|---|
+| ![img_3.png](img_3.png) |   |   |
 
 ## 为什么用 zptap
 
@@ -35,11 +37,23 @@
 
 ## 安装
 
-Chrome / Edge → `chrome://extensions` → 开发者模式 → 加载已解压的扩展程序 → 选择仓库根目录。
+### Chrome
 
-或从 [Releases](https://github.com/zzp1o3/zp-tap-extension/releases) 下载 zip 解压后加载。
+1. 打开 Chrome，地址栏输入 `chrome://extensions` 回车
+2. 右上角开启「开发者模式」
+3. 点击「加载已解压的扩展程序」
+4. 选择本仓库根目录（或解压后的 zip 目录）
+5. 打开一个新标签页即可使用
 
-打开新标签页即可使用。
+### Edge
+
+1. 打开 Edge，地址栏输入 `edge://extensions` 回车
+2. 左侧开启「开发人员模式」
+3. 点击「加载解压缩的扩展」
+4. 选择本仓库根目录（或解压后的 zip 目录）
+5. 打开一个新标签页即可使用
+
+> 或从 [Releases](https://github.com/zzp1o3/zp-tap-extension/releases) 下载 zip 解压后加载。
 
 ## 权限
 
