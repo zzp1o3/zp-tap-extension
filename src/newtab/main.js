@@ -37,6 +37,7 @@ const $settingsDrawer = document.getElementById("settings-drawer");
 const $settingsOverlay = document.getElementById("settings-overlay");
 const $settingsPanel = document.getElementById("settings-panel");
 const $settingsClose = document.getElementById("settings-close");
+const $focusAnchor = document.getElementById("focus-anchor");
 
 let settingsOpen = false;
 function openSettings() {
@@ -55,9 +56,9 @@ function closeSettings() {
   $settingsPanel.classList.add("translate-x-full");
   $settingsOverlay.style.opacity = "0";
   settingsOpen = false;
-  // 等过渡结束再摘 src，避免 iframe 在滑出途中突白
   setTimeout(() => { if (!settingsOpen) $settingsFrame.src = ""; }, 320);
   $settingsDrawer.classList.add("pointer-events-none");
+  $focusAnchor.focus(); // 焦点归位
 }
 
 // ---------- 引擎 ----------
@@ -141,7 +142,22 @@ function deactivate() {
   closeEngineList();
   $input.value = "";
   if (document.activeElement === $input) $input.blur();
+  $focusAnchor.focus(); // 焦点归位，防止地址栏抢走
 }
+
+// 隐形焦点锚：打字落入锚 → 转发到真实搜索框并唤醒
+$focusAnchor.addEventListener("input", () => {
+  const val = $focusAnchor.value;
+  $focusAnchor.value = "";
+  if (!val) return;
+  activate();
+  $input.value = val;
+  $input.dispatchEvent(new Event("input", { bubbles: true }));
+});
+// 点壁纸空白区 → 焦点归锚，防止下次按键落空
+document.getElementById("wallpaper").addEventListener("click", () => {
+  if (document.body.dataset.state === "idle") $focusAnchor.focus();
+});
 
 // ---------- 建议 ----------
 
@@ -260,14 +276,7 @@ document.addEventListener("keydown", (e) => {
     // 引擎_list 打开时点击或者 tab 切换不需要在这里处理
     return;
   }
-  // idle 态：字符键唤出（含 IME 字符）。功能键不触发。
-  // 判定：单字符可打印键、且无 Ctrl/Alt/Meta
-  // IME 起始 keydown 的 e.key===「Process」（非单字符），也要唤出，
-  // 否则中文输入法首字落不进框。唤出后 input 已聚焦，IME 文本会正常 commit。
-  if (e.ctrlKey || e.altKey || e.metaKey) return;
-  if ((e.key.length === 1 && !e.key.match(/\s/)) || e.key === "Process") {
-    activate();
-  }
+  // idle 态唤醒由隱形焦点锚 $focusAnchor 的 input 事件负责
 });
 
 $input.addEventListener("input", onInput);
