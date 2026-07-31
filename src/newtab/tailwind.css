@@ -710,7 +710,7 @@
     }
   }
 }
-:root, body[data-theme="dark"] {
+html[data-theme="dark"] {
   --tap-glass: rgba(255, 255, 255, 0.10);
   --tap-glass-2: rgba(255, 255, 255, 0.15);
   --tap-card: rgba(255, 255, 255, 0.06);
@@ -736,7 +736,7 @@
   --tap-drawer: rgba(10, 11, 13, 0.96);
   color-scheme: dark;
 }
-body[data-theme="light"] {
+html[data-theme="light"] {
   --tap-glass: rgba(0, 0, 0, 0.05);
   --tap-glass-2: rgba(0, 0, 0, 0.08);
   --tap-card: rgba(0, 0, 0, 0.03);
@@ -763,7 +763,7 @@ body[data-theme="light"] {
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
-  body[data-theme="system"] {
+  html[data-theme="system"] {
     --tap-glass: rgba(0, 0, 0, 0.05);
     --tap-glass-2: rgba(0, 0, 0, 0.08);
     --tap-card: rgba(0, 0, 0, 0.03);
@@ -790,36 +790,31 @@ body[data-theme="light"] {
     color-scheme: light;
   }
 }
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: var(--font-sans);
-  color: var(--tap-tx);
-  overflow: hidden;
-}
-body {
-  background: var(--tap-page);
-  transition: background-color 0.45s ease, color 0.45s ease;
-}
-#wallpaper {
-  position: fixed;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-image: var(--wp);
-  background-color: var(--tap-wall);
-  z-index: 0;
-  transition: background-color 0.5s ease;
-}
-#wallpaper-shade {
-  position: fixed;
-  inset: 0;
-  background: var(--tap-shade);
-  z-index: 1;
-  pointer-events: none;
-  transition: background 0.5s ease;
-}
 :root {
+  --tap-glass: rgba(255, 255, 255, 0.10);
+  --tap-glass-2: rgba(255, 255, 255, 0.15);
+  --tap-card: rgba(255, 255, 255, 0.06);
+  --tap-page: #000000;
+  --tap-wall: #000000;
+  --tap-input: #14161b;
+  --tap-upload: rgba(255, 255, 255, 0.03);
+  --tap-tx: #ffffff;
+  --tap-tx-dim: rgba(255, 255, 255, 0.55);
+  --tap-tx-70: rgba(255, 255, 255, 0.70);
+  --tap-tx-90: rgba(255, 255, 255, 0.90);
+  --tap-tx-95: rgba(255, 255, 255, 0.95);
+  --tap-line: rgba(255, 255, 255, 0.10);
+  --tap-line-2: rgba(255, 255, 255, 0.20);
+  --tap-line-15: rgba(255, 255, 255, 0.15);
+  --tap-select: rgba(255, 255, 255, 0.14);
+  --tap-hover: rgba(255, 255, 255, 0.10);
+  --tap-shade: rgba(0, 0, 0, 0.25);
+  --tap-overlay: rgba(0, 0, 0, 0.45);
+  --tap-gear: rgba(0, 0, 0, 0.30);
+  --tap-trash: rgba(0, 0, 0, 0.55);
+  --tap-badge: rgba(0, 0, 0, 0.55);
+  --tap-drawer: rgba(10, 11, 13, 0.96);
+  color-scheme: dark;
   --tp-glass: var(--tap-glass);
   --tp-glass2: var(--tap-glass-2);
   --tp-card: var(--tap-card);
@@ -841,6 +836,33 @@ body {
   --tp-overlay: var(--tap-overlay);
   --tp-drawer: var(--tap-drawer);
   --tp-shade: var(--tap-shade);
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+body {
+  transition: background-color 0.45s ease;
+}
+#wallpaper {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-image: var(--wp);
+  background-color: var(--tap-wall);
+  z-index: 0;
+  transition: background-color 0.5s ease;
+}
+#wallpaper-shade {
+  position: fixed;
+  inset: 0;
+  background: var(--tap-shade);
+  z-index: 1;
+  pointer-events: none;
+  transition: background 0.5s ease;
 }
 #settings-panel {
   transition: background-color 0.4s ease, border-color 0.4s ease;

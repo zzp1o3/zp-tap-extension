@@ -397,7 +397,7 @@ function fixedItems(all) {
 async function init() {
   // 主题
   const th = await chrome.storage.local.get("theme");
-  document.body.dataset.theme = th.theme || "system";
+  document.documentElement.dataset.theme = th.theme || "system";
 
   cfg = await loadConfig();
   wpCfg = await loadWallpaperConfig();

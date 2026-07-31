@@ -23,6 +23,7 @@ const $wpInterval = document.getElementById("wp-interval");
 const $intervalLabel = document.querySelector("label.interval");
 const $videoFile = document.getElementById("video-file");
 const $mediaUrl = document.getElementById("media-url");
+const $urlType = document.getElementById("url-type");
 const $addUrl = document.getElementById("add-url");
 
 // lucide 图标内联
@@ -300,13 +301,13 @@ $videoFile.addEventListener("change", async () => {
   notifyChanged();
 });
 
-// 添加远程 URL
+// 添加远程 URL（类型由下拉框显式指定，不用正则猜）
 $addUrl.addEventListener("click", async () => {
   const u = $mediaUrl.value.trim();
   if (!u) return;
-  const isVideo = /\.(mp4|webm|ogg|mov|mkv)(\?.*)?$/i.test(u) || /video/i.test(u);
+  const type = $urlType.value === "video" ? "video" : "image";
   const id = "url-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
-  await putWallpaper({ id, name: decode(u), type: isVideo ? "video" : "image", url: u, createdAt: Date.now() });
+  await putWallpaper({ id, name: decode(u), type, url: u, createdAt: Date.now() });
   $mediaUrl.value = "";
   wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);
   renderWallpapers();
@@ -336,7 +337,8 @@ $wpInterval.addEventListener("change", () => {
 // ---- 主题 ----
 
 async function applyTheme(theme) {
-  // 保存到 chrome.storage，通知父页立即生效
+  // 自身 iframe 立即生效 + 保存 + 通知父页
+  document.documentElement.dataset.theme = theme;
   await chrome.storage.local.set({ theme });
   document.querySelectorAll(".theme-btn").forEach((b) => {
     b.style.background = b.dataset.theme === theme ? "var(--tp-select)" : "transparent";
@@ -358,8 +360,9 @@ document.addEventListener("keydown", (e) => {
 // ---- 初始化 ----
 
 async function init() {
-  // 主题按钮高亮
+  // 主题：设自身 html + 按钮高亮
   const th = (await chrome.storage.local.get("theme")).theme || "system";
+  document.documentElement.dataset.theme = th;
   document.querySelectorAll(".theme-btn").forEach((b) => {
     b.style.background = b.dataset.theme === th ? "var(--tp-select)" : "transparent";
     b.style.color = b.dataset.theme === th ? "var(--tp-tx)" : "var(--tp-tx-dim)";
