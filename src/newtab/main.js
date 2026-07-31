@@ -94,22 +94,29 @@ function deactivate() {
 // ---------- 建议 ----------
 
 let debounceTimer = null;
+let suggestionSeq = 0; // 版本守卫，防止旧异步结果覆盖新输入
 function onInput() {
   const q = $input.value;
   clearTimeout(debounceTimer);
   if (!q.trim()) {
+    suggestionSeq++; // 使任何在途的异步结果作废
     loadEmptyPanel();
     return;
   }
+  const seq = ++suggestionSeq;
   debounceTimer = setTimeout(async () => {
+    if (seq !== suggestionSeq) return; // 已被更新的输入取代
     const items = await buildSuggestions(q);
+    if (seq !== suggestionSeq) return; // await 期间输入又变了
     renderSuggestions($panel, items, { onSelect: openItem, query: q });
   }, 150);
 }
 
-// 空查询面板：常用书签 + 最近历史
+// 空查询面板：常用书签 + 最近历史。带版本守卫，避免与 onInput 的异步结果互相覆盖。
 async function loadEmptyPanel() {
+  const seq = suggestionSeq;
   const items = await buildEmptySuggestions();
+  if (seq !== suggestionSeq) return;
   renderSuggestions($panel, items, { onSelect: openItem, query: "" });
 }
 
@@ -250,10 +257,15 @@ async function renderWallpaper() {
   if (wpCfg.mode === "per-open") {
     id = wallpapers[0].id;
   } else {
-    // interval 模式也按 currentId.getNext
+    // interval 模式按 currentId；若记录已删则回退第一张并修正配置
     id = wpCfg.currentId || wallpapers[0].id;
   }
-  const rec = await getWallpaper(id);
+  let rec = await getWallpaper(id);
+  if (!rec) {
+    id = wallpapers[0].id;
+    rec = await getWallpaper(id);
+    if (wpCfg.mode === "interval") saveWallpaperConfig({ currentId: id });
+  }
   if (!rec) return;
   if (currentWpObjectUrl) URL.revokeObjectURL(currentWpObjectUrl);
   currentWpObjectUrl = URL.createObjectURL(rec.blob);

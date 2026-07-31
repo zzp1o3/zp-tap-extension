@@ -4,7 +4,7 @@
 import { loadConfig, saveConfig } from "../engines.js";
 import {
   listWallpapers, putWallpaper, delWallpaper, compressImage,
-  loadWallpaperConfig, saveWallpaperConfig, getWallpaper,
+  loadWallpaperConfig, saveWallpaperConfig,
 } from "../storage.js";
 
 let cfg = null;
@@ -122,13 +122,13 @@ async function renderWallpapers() {
   for (const u of thumbUrls) URL.revokeObjectURL(u);
   thumbUrls.clear();
   $wpGrid.innerHTML = "";
+  // wallpapers 已含完整 blob（listWallpapers 走 getAll），无需逐张再读 IndexedDB
   for (const w of wallpapers) {
     const card = document.createElement("div");
     card.className = "wp-card";
-    const rec = await getForThumb(w.id);
-    if (rec) {
+    if (w.blob) {
       const img = document.createElement("img");
-      const u = URL.createObjectURL(rec.blob);
+      const u = URL.createObjectURL(w.blob);
       thumbUrls.add(u);
       img.src = u;
       img.alt = w.name;
@@ -139,16 +139,17 @@ async function renderWallpapers() {
     btn.addEventListener("click", async () => {
       await delWallpaper(w.id);
       wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);
+      // 删除的若是当前轮播壁纸，清掉 currentId，避免 main.js 还指向已删 id
+      wpCfg = await loadWallpaperConfig();
+      if (wpCfg.currentId === w.id) {
+        wpCfg = await saveWallpaperConfig({ currentId: null });
+      }
       renderWallpapers();
       notifyChanged();
     });
     card.appendChild(btn);
     $wpGrid.appendChild(card);
   }
-}
-
-async function getForThumb(id) {
-  return await getWallpaper(id);
 }
 
 $wpFile.addEventListener("change", async () => {

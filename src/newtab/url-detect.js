@@ -37,6 +37,8 @@ export function isDirectUrl(input) {
   if (!s) return false;
   // 带协议直接通过
   if (s.startsWith("http://") || s.startsWith("https://")) return true;
+  // localhost（无点）直接视为直达
+  if (s.split(/[/:]/)[0] === "localhost") return true;
   // 无点不可能是 URL
   if (!s.includes(".")) return false;
   // 有空格
@@ -45,6 +47,8 @@ export function isDirectUrl(input) {
   if (s.includes("@")) return false;
   const host = normalize(s);
   if (!host) return false;
+  // 裸 IP（含内网/回环）直接视为直达
+  if (/^\d{1,3}(\.\d{1,3}){3}(:\d+)?$/.test(host)) return true;
   // 取点后最后一段作为 TLD，再尝试倒数两段（处理 com.cn 之类）
   const parts = host.split(".");
   if (parts.length < 2) return false;

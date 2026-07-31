@@ -173,7 +173,7 @@ body[data-state="idle"] #suggestions { /* 仍由 .hidden 控制 */ }
   border-radius: 2px;
 }
 
-/* 设置齿轮 */
+/* 设置齿轮：默认半透明可见（触摸设备无 hover，否则永不显示）；hover 增强 */
 #gear {
   position: fixed;
   top: 16px; right: 16px;
@@ -184,12 +184,12 @@ body[data-state="idle"] #suggestions { /* 仍由 .hidden 控制 */ }
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 0.35;
+  transition: opacity 0.2s ease, background 0.2s ease;
   z-index: 30;
 }
 body:hover #gear { opacity: 1; }
-#gear:hover { background: rgba(0,0,0,0.45); }
+#gear:hover { opacity: 1; background: rgba(0,0,0,0.45); }
 
 /* 设置 iframe */
 #settings-frame {
