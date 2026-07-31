@@ -209,6 +209,10 @@ export function renderSuggestions(container, items, { onSelect, query }) {
       row.classList.add("selected");
       row.classList.add(ROW_SELECTED);
     });
+    row.addEventListener("mouseleave", () => {
+      row.classList.remove("selected");
+      row.classList.remove(ROW_SELECTED);
+    });
     frag.appendChild(row);
   });
   container.appendChild(frag);

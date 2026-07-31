@@ -318,8 +318,10 @@ function hideImage() {
 // interval 模式定时在 startInterval 内递增。
 function pickMedia() {
   if (wallpapers.length === 0) return null;
-  const idx = ((wpCfg.currentIndex ?? 0) + wallpapers.length) % wallpapers.length;
-  return wallpapers[idx];
+  const items = carouselItems(wallpapers);
+  const pool = items.length > 0 ? items : wallpapers; // 全部未勾选时兜底全量
+  const idx = ((wpCfg.currentIndex ?? 0) + pool.length) % pool.length;
+  return pool[idx];
 }
 
 async function renderMedia() {
@@ -354,12 +356,15 @@ async function renderMedia() {
 
 function startIntervalIfNeeded() {
   stopInterval();
-  if (wpCfg.mode === "interval" && wallpapers.length > 1) {
-    intervalTimer = setInterval(async () => {
-      wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % wallpapers.length;
-      await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
-      renderMedia();
-    }, Math.max(5, wpCfg.intervalSec || 30) * 1000);
+  if (wpCfg.mode === "interval") {
+    const items = carouselItems(wallpapers);
+    if (items.length > 1) {
+      intervalTimer = setInterval(async () => {
+        wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % items.length;
+        await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
+        renderMedia();
+      }, Math.max(5, wpCfg.intervalSec || 30) * 1000);
+    }
   }
 }
 
@@ -368,6 +373,11 @@ function stopInterval() {
 }
 
 // ---------- 初始化 ----------
+
+// 取参与轮播的媒体项。无 carousel 字段默认 true。
+function carouselItems(all) {
+  return all.filter((w) => w.carousel !== false);
+}
 
 async function init() {
   // 主题
@@ -378,12 +388,22 @@ async function init() {
   wpCfg = await loadWallpaperConfig();
   const all = await listWallpapers();
   wallpapers = all.sort((a, b) => a.createdAt - b.createdAt);
+  // 确保旧数据有 carousel 默认值
+  for (const w of wallpapers) {
+    if (w.carousel === undefined) { w.carousel = true; }
+  }
   renderEngineName();
 
-  // per-open 模式：每次打开新标签页进到下一个媒体项
-  if (wpCfg.mode === "per-open" && wallpapers.length > 0) {
-    wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % wallpapers.length;
-    await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
+  // fixed 模式：不递增，直接用第一个参与轮播的项
+  if (wpCfg.mode === "fixed") {
+    wpCfg.currentIndex = 0;
+    await saveWallpaperConfig({ currentIndex: 0 });
+  } else if (wpCfg.mode === "per-open") {
+    const items = carouselItems(wallpapers);
+    if (items.length > 0) {
+      wpCfg.currentIndex = ((wpCfg.currentIndex ?? 0) + 1) % items.length;
+      await saveWallpaperConfig({ currentIndex: wpCfg.currentIndex });
+    }
   }
   await renderMedia();
   startIntervalIfNeeded();

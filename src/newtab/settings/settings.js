@@ -28,6 +28,7 @@ const $addUrl = document.getElementById("add-url");
 // lucide 图标内联
 const GRIP_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`;
 const TRASH_SVG = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+const CHECK_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`;
 
 // ---- 引擎 ----
 
@@ -146,52 +147,62 @@ async function renderWallpapers() {
     card.style.background = "var(--tp-upload)";
     card.style.aspectRatio = "16 / 10";
 
-    // 卡片内容：本地 blob 显示缩略图；远程 url 仅显示标签
-    if (w.blob) {
-      if (w.type === "video") {
-        // 视频 blob：用 createElement('video') 替代截图？
-        // 不加：播放缩略图由 canvas 第一帧抓取 cost 高。
-        // 仅显示名称 + 播放图标
-        const label = document.createElement("div");
-        label.className = "w-full h-full flex flex-col items-center justify-center text-[11px] gap-1 px-1";
-        label.style.color = "var(--tp-tx-dim)";
-        label.innerHTML = `<span class="truncate max-w-full">${escapeHTML(w.name)}</span>`;
-        card.appendChild(label);
-        const play = document.createElement("div");
-        play.className = "absolute inset-0 flex items-center justify-center";
-        play.innerHTML = PLAY_SVG;
-        card.appendChild(play);
-      } else {
-        const img = document.createElement("img");
-        const u = URL.createObjectURL(w.blob);
-        thumbUrls.add(u);
-        img.src = u;
-        img.alt = w.name;
-        img.className = "w-full h-full object-cover block";
-        card.appendChild(img);
-      }
-    } else if (w.url) {
-      const label = document.createElement("div");
-      label.className = "w-full h-full flex flex-col items-center justify-center text-[11px] gap-0.5 px-2";
-      label.style.color = "var(--tp-tx-dim)";
-      label.innerHTML = `<span class="text-[12px]" style="color:var(--tp-tx)">${w.type === "video" ? "视频" : "图片"} URL</span><span class="truncate max-w-full">${escapeHTML(w.url)}</span>`;
-      card.appendChild(label);
+    // 缩略图
+    if (w.blob && w.type !== "video") {
+      const img = document.createElement("img");
+      const u = URL.createObjectURL(w.blob);
+      thumbUrls.add(u);
+      img.src = u; img.alt = w.name;
+      img.className = "w-full h-full object-cover block";
+      card.appendChild(img);
+    } else if (w.url && w.type !== "video") {
+      // URL 图片：直接用 URL 作 img src，浏览器加载 = 本地上传同等效果
+      const img = document.createElement("img");
+      img.src = w.url; img.alt = w.url;
+      img.className = "w-full h-full object-cover block";
+      img.onerror = () => {
+        img.remove();
+        card.appendChild(makePlayOverlay(w));
+      };
+      card.appendChild(img);
+    } else {
+      // 视频：播放图标叠加
+      card.appendChild(makePlayOverlay(w));
     }
     if (w.type === "video") {
       const badge = document.createElement("span");
-      badge.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px]";
-    badge.style.background = "var(--tp-badge)";
-    badge.style.color = "var(--tp-tx)";
+      badge.className = "absolute top-1 left-1 px-1.5 py-0.5 rounded text-[10px]";
+      badge.style.background = "var(--tp-badge)";
+      badge.style.color = "var(--tp-tx)";
       badge.textContent = "视频";
       card.appendChild(badge);
     }
+
+    // 轮播勾选框
+    const cb = document.createElement("button");
+    cb.className = "absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] transition-all duration-300 ease-in-out hover:scale-110 flex items-center gap-0.5";
+    cb.style.background = w.carousel !== false ? "var(--tp-glass2)" : "var(--tp-badge)";
+    cb.style.color = "var(--tp-tx)";
+    cb.innerHTML = (w.carousel !== false ? CHECK_SVG : "") + " 轮播";
+    cb.title = "参与轮播";
+    cb.addEventListener("click", async (ev) => {
+      ev.stopPropagation();
+      w.carousel = w.carousel === false;
+      await putWallpaper(w);
+      renderWallpapers();
+      notifyChanged();
+    });
+    card.appendChild(cb);
+
+    // 删除
     const btn = document.createElement("button");
     btn.className = "absolute top-1 right-1 px-2 py-0.5 rounded-md text-[12px] transition-all duration-300 ease-in-out hover:scale-110";
     btn.style.background = "var(--tp-badge)";
     btn.style.color = "var(--tp-tx)";
     btn.innerHTML = TRASH_SVG;
     btn.title = "删除";
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async (ev) => {
+      ev.stopPropagation();
       await delWallpaper(w.id);
       wallpapers = (await listWallpapers()).sort((x, y) => x.createdAt - y.createdAt);
       wpCfg = await loadWallpaperConfig();
@@ -204,6 +215,22 @@ async function renderWallpapers() {
     card.appendChild(btn);
     $wpGrid.appendChild(card);
   }
+}
+
+function makePlayOverlay(w) {
+  const div = document.createElement("div");
+  div.className = "w-full h-full flex flex-col items-center justify-center text-[11px] gap-1 px-1";
+  div.style.color = "var(--tp-tx-dim)";
+  const name = w.name || w.url || "";
+  const el = document.createElement("span");
+  el.className = "truncate max-w-full";
+  el.textContent = name;
+  div.appendChild(el);
+  const play = document.createElement("div");
+  play.className = "pointer-events-none absolute inset-0 flex items-center justify-center";
+  play.innerHTML = PLAY_SVG;
+  div.appendChild(play);
+  return div;
 }
 
 function escapeHTML(s) {
@@ -261,7 +288,8 @@ $wpMode.addEventListener("change", () => {
   wpCfg = { ...wpCfg, mode: $wpMode.value };
   if (wpCfg.mode === "interval") $intervalLabel.classList.remove("hidden");
   else $intervalLabel.classList.add("hidden");
-  saveWallpaperConfig({ mode: wpCfg.mode });
+  // 切换模式时重置 currentIndex
+  saveWallpaperConfig({ mode: wpCfg.mode, currentIndex: 0 });
   notifyChanged();
 });
 
