@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "Tap 新标签页",
+    "message": "zptap",
     "description": "扩展名称"
   },
   "extDescription": {
-    "message": "极简新标签页：国内常用搜索引擎切换、书签与历史智能直达、自定义轮播壁纸。"
+    "message": "极简新标签页：一键直达书签与历史，引擎自由切换，让每次打开都安静舒适。"
   }
 }

@@ -4,22 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>新标签页</title>
-  <link rel="stylesheet" href="tailwind.css" />
+  <link rel="stylesheet" href="src/newtab/tailwind.css" />
   <!-- 早期聚焦：普通同步脚本，抢在 Chrome 抢占地址栏焦点之前 -->
-  <script src="focus-init.js"></script>
+  <script src="src/newtab/focus-init.js"></script>
 </head>
 <body data-state="idle">
-  <!-- 焦点锚：普通扩展页导航时浏览器不抢地址栏，autofocus 让焦点落在这，打字即唤醒 -->
-  <input id="focus-anchor" type="text" autofocus autocomplete="off"
-         style="position:fixed;top:-100px;left:-100px;width:1px;height:1px;opacity:0;pointer-events:none"
-         tabindex="-1" />
-
   <div id="wallpaper"></div>
   <video id="video-bg" class="hidden fixed inset-0 w-full h-full object-cover z-0 pointer-events-none" muted loop playsinline autoplay preload="auto"></video>
   <div id="wallpaper-shade"></div>
 
-  <!-- 搜索框 -->
-  <div id="search-box" class="tap-drop-in hidden fixed top-[18vh] left-1/2 -translate-x-1/2 flex items-center gap-2 w-[min(640px,88vw)] h-14 px-3 py-0 rounded-3xl border border-[var(--tp-line2)] bg-[var(--tp-glass)] backdrop-blur-md text-[var(--tp-tx)] shadow-[0_10px_40px_rgba(0,0,0,0.35)] z-10">
+  <!-- 搜索框：任何模式下始终在 DOM 且可聚焦（IME 组合第一键就落在 input 上，不吞字）。
+       隐藏模式用 search-invisible 类让它透明不可见但可接收键盘；常驻用 search-faded -->
+  <!-- style="opacity:0" 兜底：CSS 加载完成前输入框也不可见（防首帧闪烁） -->
+  <div id="search-box" style="opacity:0" class="tap-drop-in search-invisible fixed top-[18vh] left-1/2 -translate-x-1/2 flex items-center gap-2 w-[min(640px,88vw)] h-14 px-3 py-0 rounded-3xl border border-[var(--tp-line2)] bg-[var(--tp-glass)] backdrop-blur-md text-[var(--tp-tx)] shadow-[0_10px_40px_rgba(0,0,0,0.35)] z-10">
     <div id="engine-switch" class="relative">
       <button id="engine-name" type="button" title="切换搜索引擎"
               class="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-[var(--tp-tx-3)] rounded-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-[var(--tp-hover)]">
@@ -64,6 +61,6 @@
     </div>
   </div>
 
-  <script type="module" src="main.js"></script>
+  <script type="module" src="src/newtab/main.js"></script>
 </body>
 </html>

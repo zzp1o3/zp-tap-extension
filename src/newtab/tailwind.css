@@ -897,6 +897,11 @@ body {
 #settings-overlay {
   transition: background-color 0.4s ease;
 }
+#search-box.search-invisible {
+  opacity: 0;
+  pointer-events: none;
+  animation: none !important;
+}
 #search-box.search-faded {
   background: transparent;
   border-color: transparent;
@@ -905,9 +910,11 @@ body {
 #search-box.search-faded #engine-name, #search-box.search-faded #q {
   opacity: 0.45;
 }
-#search-box:focus-within.search-faded, #search-box:not(.search-faded) {
-  background: var(--tap-glass);
-  border-color: var(--tp-line2);
+#search-box.search-faded ~ #suggestions {
+  opacity: 0.4;
+}
+#suggestions:hover {
+  opacity: 1;
 }
 [hidden] {
   display: none !important;

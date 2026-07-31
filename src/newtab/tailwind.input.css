@@ -190,7 +190,17 @@ body {
 #settings-panel { transition: background-color 0.4s ease, border-color 0.4s ease; }
 #settings-overlay { transition: background-color 0.4s ease; }
 
-/* 常驻搜索框未聚焦时：更透明，聚焦/输入恢复毛玻璃 */
+/* 搜索框视觉隐藏：透明不可见但仍在 DOM 中可聚焦可接收键盘（IME 组合不吞字）。
+   由 JS 在隐藏模式/回 idle 时添加，输入/点击时移除。
+   必须同时禁掉 tap-drop-in 动画——动画的 to 帧 opacity:1 优先级高于普通声明，
+   否则隐藏状态下输入框仍会播一次淡入动画（闪一下再隐藏）。 */
+#search-box.search-invisible {
+  opacity: 0;
+  pointer-events: none;
+  animation: none !important;
+}
+
+/* 常驻搜索框未交互时：更透明；由 JS 在用户 mousedown/input 时移除 */
 #search-box.search-faded {
   background: transparent;
   border-color: transparent;
@@ -200,11 +210,12 @@ body {
 #search-box.search-faded #q {
   opacity: 0.45;
 }
-#search-box:focus-within.search-faded,
-#search-box:not(.search-faded) {
-  /* 聚焦时恢复默认(毛玻璃) */
-  background: var(--tap-glass);
-  border-color: var(--tp-line2);
+/* 常驻模式未交互时：建议面板随输入框一起变暗；悬停面板恢复 */
+#search-box.search-faded ~ #suggestions {
+  opacity: 0.4;
+}
+#suggestions:hover {
+  opacity: 1;
 }
 
 [hidden] { display: none !important; }

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Tap 新标签页",
+  "name": "zptap",
   "version": "0.2.0",
-  "description": "极简新标签页：国内常用搜索引擎切换、书签与历史的智能直达、自定义轮播壁纸。",
+  "description": "极简新标签页：一键直达书签与历史，引擎自由切换，让每次打开都安静舒适。",
   "default_locale": "zh_CN",
   "chrome_url_overrides": {
     "newtab": "src/newtab/launch.html"

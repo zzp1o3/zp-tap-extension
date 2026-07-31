@@ -4,7 +4,7 @@
 self.addEventListener("install", () => {});
 
 chrome.action.onClicked.addListener(() => {
-  const url = chrome.runtime.getURL("src/newtab/index.html");
+  const url = chrome.runtime.getURL("zptop.html");
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const current = tabs[0];
     if (current?.id !== undefined) {

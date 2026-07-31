@@ -39,12 +39,11 @@ const $settingsDrawer = document.getElementById("settings-drawer");
 const $settingsOverlay = document.getElementById("settings-overlay");
 const $settingsPanel = document.getElementById("settings-panel");
 const $settingsClose = document.getElementById("settings-close");
-const $focusAnchor = document.getElementById("focus-anchor");
 
 let settingsOpen = false;
 function openSettings() {
   if (settingsOpen) return;
-  $settingsFrame.src = "settings/settings.html";
+  $settingsFrame.src = "src/newtab/settings/settings.html";
   $settingsDrawer.classList.remove("pointer-events-none");
   // 下一帧再触发过渡，确保初始 translate-x-full 已生效
   requestAnimationFrame(() => {
@@ -60,7 +59,7 @@ function closeSettings() {
   settingsOpen = false;
   setTimeout(() => { if (!settingsOpen) $settingsFrame.src = ""; }, 320);
   $settingsDrawer.classList.add("pointer-events-none");
-  $focusAnchor.focus(); // 关闭设置后焦点归锚
+  $input.focus(); // 关闭设置后焦点回搜索框
 }
 
 // ---------- UI 配置（搜索框/齿轮显隐） ----------
@@ -75,17 +74,43 @@ async function loadUiConfig() {
 
 // 应用搜索框显隐：
 //   hideSearchBox=false → 常驻显示（建议仍输入才出）
-//   hideSearchBox=true  → 隐藏，输入才唤出（现状）
+//   hideSearchBox=true  → 隐藏（透明不可见但可聚焦），输入才显形
+// 两种模式下焦点都保持在 $input（IME 组合始终发生在 input 上，不吞字）。
 function applySearchBoxMode(ui) {
+  document.body.dataset.state = "active";
+  $input.focus();
   if (ui.hideSearchBox) {
-    deactivate();
+    hideBox();
     $box.classList.remove("search-faded");
+    $panel.classList.add("hidden");
   } else {
-    document.body.dataset.state = "active";
-    $box.classList.remove("hidden");
-    $box.classList.add("search-faded"); // 常驻未聚焦时更透明
+    showBox();
+    $box.classList.add("search-faded"); // 常驻未交互时更透明
   }
 }
+
+// 用户真实交互（点击/输入）时恢复毛玻璃，程序化 focus 不触发
+$box.addEventListener("mousedown", () => {
+  $box.classList.remove("search-faded");
+});
+$input.addEventListener("input", () => {
+  if (uiConfig?.hideSearchBox) {
+    // 隐藏模式：一旦有输入立即显形
+    showBox();
+    document.body.dataset.state = "active";
+  } else {
+    $box.classList.remove("search-faded");
+  }
+});
+$input.addEventListener("compositionstart", () => {
+  // IME 组合开始 → 显形/恢复毛玻璃（组合第一键已在 input 上，不吞字）
+  if (uiConfig?.hideSearchBox) {
+    showBox();
+    document.body.dataset.state = "active";
+  } else {
+    $box.classList.remove("search-faded");
+  }
+});
 
 // 应用齿轮显隐：
 //   hideGear=false → 齿轮常驻（半透明），无贴边箭头
@@ -181,33 +206,37 @@ async function cycleShortcut(dir) {
 }
 
 // ---------- 唤出/收框 ----------
+// 关键设计：焦点始终在 $input（任何模式、任何时刻）。
+// IME 组合第一键就发生在 input 上 → 中文首字不吞。
+// 「隐藏搜索框」只是视觉隐藏（opacity:0 + pointer-events:none），
+// 输入框仍在 DOM 中可聚焦可接收键盘。
+
+// 显示搜索框（移除透明隐藏）
+function showBox() {
+  $box.classList.remove("search-invisible");
+}
+
+// 隐藏搜索框（视觉隐藏，焦点仍在 $input 上）
+function hideBox() {
+  $box.classList.add("search-invisible");
+}
 
 function activate() {
   document.body.dataset.state = "active";
-  $box.classList.remove("hidden");
+  showBox();
   $input.focus();
   loadEmptyPanel();
 }
 
 function deactivate() {
   document.body.dataset.state = "idle";
-  $box.classList.add("hidden");
+  hideBox();
   $panel.classList.add("hidden");
   closeEngineList();
   $input.value = "";
-  if (document.activeElement === $input) $input.blur();
-  $focusAnchor.focus(); // 焦点归锚（普通页焦点源）
+  // 焦点保持在 $input（不 blur），这样 IME 组合始终在可见/可聚焦的 input 上
+  $input.focus();
 }
-
-// 焦点锚：打字落入锚 → 转发到搜索框并唤醒
-$focusAnchor.addEventListener("input", () => {
-  const val = $focusAnchor.value;
-  $focusAnchor.value = "";
-  if (!val) return;
-  activate();
-  $input.value = val;
-  $input.dispatchEvent(new Event("input", { bubbles: true }));
-});
 
 // ---------- 建议 ----------
 
@@ -298,7 +327,7 @@ function submitQuery() {
 // ---------- 键盘 ----------
 
 document.addEventListener("keydown", (e) => {
-  // Esc：常驻模式清空输入隐藏建议；隐藏模式回 idle
+  // Esc：常驻模式清空输入隐藏建议并回到透明；隐藏模式回 idle
   if (e.key === "Escape") {
     if (uiConfig.hideSearchBox) {
       deactivate();
@@ -306,8 +335,9 @@ document.addEventListener("keydown", (e) => {
       $input.value = "";
       $panel.classList.add("hidden");
       closeEngineList();
-      $input.blur();
-      $focusAnchor.focus(); // 焦点归锚
+      // 焦点保持输入框；回到透明（search-faded 与焦点无关，Esc 后重新加回）
+      $box.classList.add("search-faded");
+      $input.focus();
     }
     return;
   }
@@ -343,9 +373,8 @@ document.addEventListener("keydown", (e) => {
 });
 
 $input.addEventListener("input", onInput);
-$input.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { deactivate(); }
-});
+// Esc 统一由 document 的 keydown 处理（区分常驻/隐藏模式），此处不再重复监听，
+// 否则 $input 上的监听会先执行 deactivate() 无条件隐藏搜索框。
 
 // 引擎名点击 → 下拉
 $engine.addEventListener("click", (e) => {
@@ -481,6 +510,7 @@ async function init() {
 
   // UI 显隐配置
   uiConfig = await loadUiConfig();
+  $box.style.removeProperty("opacity"); // 移除防闪烁兜底内联样式，交给类控制
   applySearchBoxMode(uiConfig);
   applyGearMode(uiConfig);
 
