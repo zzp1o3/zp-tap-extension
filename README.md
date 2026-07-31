@@ -30,6 +30,7 @@
 ```bash
 git clone git@github.com:zzp1o3/zp-tap-extension.git
 ```
+或者release中下载zip
 
 Chrome / Edge → `chrome://extensions` → 开启开发者模式 → 加载已解压的扩展程序 → 选择仓库根目录。
 
